@@ -8,6 +8,10 @@
 
 Access many URL shortening services from one library.
 
+Supported URL shortening services:
+    tinyurl.com  (shrink only)
+    tr.im
+
 Language: Python
 Website: http://gitorious.org/shorty
 Repository: git://gitorious.org/shorty/python.git
