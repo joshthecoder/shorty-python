@@ -1,6 +1,6 @@
 import shorty
 
-# a long url that needs to be shorten
+# A long url that needs to be shorten.
 url = 'http://test.com/a/long/url/that/needs/to/be/shorten'
 
 # The service to use for shortening the URL
@@ -9,5 +9,13 @@ url = 'http://test.com/a/long/url/that/needs/to/be/shorten'
 # which stores the links locally in memory.
 service = 'sandbox'
 
-# pass in the service and long url to get a tiny url
+# Pass in the service and long url to get a tiny url.
 tinyurl = shorty.shrink(service, url)
+
+# You could also access a global instance of the service directly.
+tinyurl = shorty.sandbox.shrink(url)
+
+# If you want a new instance of the service.
+mysandbox = shorty.Sandbox()
+mysandbox.shrink(url)
+

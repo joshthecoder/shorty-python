@@ -82,7 +82,7 @@ class Service(object):
 """ Services """
 
 # sandbox
-class _Sandbox(Service):
+class Sandbox(Service):
 
     def __init__(self, length=4, letters='abcdefghijklmnopqrstuvwxyz'):
         self.urls = {}
@@ -113,7 +113,7 @@ class _Sandbox(Service):
             raise ShortyError('Not a sandbox url')
         return self.urls.get(turl.path.strip('/'))
 
-Sandbox = _Sandbox()
+sandbox = Sandbox()
 
 # tinyurl.com
 class Tinyurl(Service):
@@ -128,8 +128,10 @@ class Tinyurl(Service):
         # TODO: implement
         return None
 
+tinyurl = Tinyurl
+
 # tr.im
-class _Trim(Service):
+class Trim(Service):
 
     def __init__(self, apikey=None, username=None, password=None):
         self.base_param = {}
@@ -180,10 +182,10 @@ class _Trim(Service):
             raise ShortyError(self.status[1])
         return str(jdata['destination'])
 
-Trim = _Trim()  # non-authenticated, no apikey instance
+trim = Trim()  # non-authenticated, no apikey instance
 
 # urlborg.com
-class _Urlborg(Service):
+class Urlborg(Service):
 
     def __init__(self, apikey=None):
         self.apikey = apikey
@@ -213,14 +215,14 @@ class _Urlborg(Service):
             raise ShortyError('Invalid tiny url or apikey')
         return str(jdata['o_url'])
 
-Urlborg = _Urlborg()
+urlborg = Urlborg()
 
 """Mapping of domain to service class"""
 services = {
-    'sandbox': Sandbox,
-    'tinyurl.com': Tinyurl,
-    'tr.im': Trim,
-    'urlborg.com': Urlborg, 'ub0.cc': Urlborg,
+    'sandbox': sandbox,
+    'tinyurl.com': tinyurl,
+    'tr.im': trim,
+    'urlborg.com': urlborg, 'ub0.cc': urlborg,
 }
 
 """
