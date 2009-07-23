@@ -78,7 +78,9 @@ class Service(object):
     def expand(tinyurl):
         return None
 
-"""Tinyurl.com"""
+""" Services """
+
+# tinyurl.com
 class Tinyurl(Service):
 
     @staticmethod
@@ -86,7 +88,12 @@ class Tinyurl(Service):
         resp = request('http://tinyurl.com/api-create.php?url=%s' % bigurl)
         return resp.readline()
 
-"""Tr.im"""
+    @staticmethod
+    def expand(tinyurl):
+        # TODO: implement
+        return None
+
+# tr.im
 class _Trim(Service):
 
     def __init__(self, apikey=None, username=None, password=None):
@@ -139,4 +146,38 @@ class _Trim(Service):
         return str(jdata['destination'])
 
 Trim = _Trim()  # non-authenticated, no apikey instance
-        
+
+"""Mapping of domain to service class"""
+services = {
+    'tinyurl.com': Tinyurl,
+    'tr.im': Trim
+}
+
+"""
+Shrink the given url for the specified service domain.
+Returns the tiny url OR None if service not supported.
+"""
+def shrink(service_domain, bigurl, *args, **kargs):
+
+    s = services.get(service_domain)
+    if not s:
+        return None
+    return s.shrink(bigurl, *args, **kargs)
+    
+"""
+Auto detect service and expand the tiny url.
+Returns the expanded url or None if service not supported.
+"""
+def expand(tinyurl):
+
+    turl = urlparse(tinyurl)
+    domain = turl.netloc.lower()
+    if domain.startswith('www.'):
+        # strip off www. if present
+        domain = domain[4:]
+    s = services.get(domain)
+    if not s:
+        # service not supported
+        return None
+    return s.expand(tinyurl)
+
