@@ -38,6 +38,7 @@ THE SOFTWARE.
 
 from urllib2 import urlopen, URLError, HTTPError
 from urllib import urlencode
+from urlparse import urlparse
 import base64
 
 try:
@@ -121,6 +122,21 @@ class _Trim(Service):
         self.destination = str(jdata['destination'])
         self.domain = str(jdata['domain'])
         return str(jdata['url'])
+
+    def expand(self, tinyurl):
+        turl = urlparse(tinyurl)
+        if turl.netloc != 'tr.im' and turl.netloc != 'www.tr.im':
+            raise ShortyError('Not a valid tr.im url')
+        parameters = {}
+        parameters.update(self.base_param)
+        parameters['trimpath'] = turl.path.strip('/')
+        url = 'http://api.tr.im/api/trim_destination.json?%s' % urlencode(parameters)
+        resp = request(url)
+        jdata = json.loads(resp.read())
+        self.status = (int(jdata['status']['code']), str(jdata['status']['message']))
+        if not 200 <= self.status[0] < 300:
+            raise ShortyError(self.status[1])
+        return str(jdata['destination'])
 
 Trim = _Trim()  # non-authenticated, no apikey instance
         
