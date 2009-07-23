@@ -9,6 +9,7 @@
 Access many URL shortening services from one library.
 
 Supported URL shortening services:
+    sandbox (stored locally in memory for testing)
     tinyurl.com  (shrink only)
     tr.im
 
@@ -23,3 +24,5 @@ Install:
     Simply include the shorty.py module in your python path.
     If using a version of python before 2.6 you will also need
     to have simplejson installed.
+
+See example.py for a demo of using this library.

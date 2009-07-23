@@ -39,6 +39,7 @@ THE SOFTWARE.
 from urllib2 import urlopen, URLError, HTTPError
 from urllib import urlencode
 from urlparse import urlparse
+from random import randint
 import base64
 
 try:
@@ -79,6 +80,40 @@ class Service(object):
         return None
 
 """ Services """
+
+# sandbox
+class _Sandbox(Service):
+
+    def __init__(self, length=4, letters='abcdefghijklmnopqrstuvwxyz'):
+        self.urls = {}
+        self.letters = letters
+        self.length = length
+        self.base = len(letters) - 1
+
+    def shrink(self, bigurl):
+        # generate the tiny path
+        tpath = ''
+        while True:
+            for i in range(self.length):
+                tpath += self.letters[randint(0, self.base)]
+            if self.urls.has_key(tpath):
+                # tpath already in use, regen another
+                tpath = ''
+            else:
+                break
+
+        # store url and return tiny link
+        self.urls[tpath] = bigurl
+        return 'http://sandbox/' + tpath
+
+    def expand(self, tinyurl):
+        # lookup big url and return
+        turl = urlparse(tinyurl)
+        if turl.netloc != 'sandbox':
+            raise ShortyError('Not a sandbox url')
+        return self.urls.get(turl.path.strip('/'))
+
+Sandbox = _Sandbox()
 
 # tinyurl.com
 class Tinyurl(Service):
@@ -149,6 +184,7 @@ Trim = _Trim()  # non-authenticated, no apikey instance
 
 """Mapping of domain to service class"""
 services = {
+    'sandbox': Sandbox,
     'tinyurl.com': Tinyurl,
     'tr.im': Trim
 }
