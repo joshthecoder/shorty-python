@@ -1,6 +1,21 @@
 """
+     _                _
+ ___| |__   ___  _ __| |_ _   _ 
+/ __| '_ \ / _ \| '__| __| | | |
+\__ \ | | | (_) | |  | |_| |_| |
+|___/_| |_|\___/|_|   \__|\__, |
+                           __/ |
+                          |___/ 
+
+Access many URL shortening services from one library.
+
+Python 2.4+
+Versions before 2.6 require simplejson.
+
+http://gitorious.org/shorty
+
 MIT License
-Copyright (c) 2009 Joshua Roesslein
+Copyright (c) 2009 Joshua Roesslein <jroesslein at gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,14 +37,21 @@ THE SOFTWARE.
 """
 
 from urllib2 import urlopen, URLError, HTTPError
+from urllib import urlencode
+import base64
+
+try:
+    import json
+except:
+    import simplejson as json
 
 class ShortyError(Exception):
 
     def __init__(self, reason):
-        self.reason = reason
+        self.reason = str(reason)
 
     def __str__(self):
-        repr(self.reason)
+        return repr(self.reason)
 
 """Wrap urlopen to raise shorty errors instead"""
 def request(*args, **kargs):
@@ -38,6 +60,11 @@ def request(*args, **kargs):
         return urlopen(*args, **kargs)
     except URLError, e:
         raise ShortyError(e)
+
+"""Build basic auth header value"""
+def basic_auth(username, password):
+
+    return 'Basic %s' % base64.b64encode('%s:%s' % (username, password))
 
 """Base interface that all services implement."""
 class Service(object):
@@ -57,4 +84,43 @@ class Tinyurl(Service):
     def shrink(bigurl):
         resp = request('http://tinyurl.com/api-create.php?url=%s' % bigurl)
         return resp.readline()
+
+"""Tr.im"""
+class _Trim(Service):
+
+    def __init__(self, apikey=None, username=None, password=None):
+        self.base_param = {}
+        if apikey:
+            self.base_param['api_key'] = apikey
+        if username and password:
+            self.base_param['Authorization'] = basic_auth(username, password)
+
+    def shrink(self, bigurl, custom=None, searchtags=None, privacycode=None,
+                newtrim=False, sandbox=False):
+        parameters = {}
+        parameters.update(self.base_param)
+        parameters['url'] = bigurl
+        if custom:
+            parameters['custom'] = custom
+        if searchtags:
+            parameters['searchtags'] = searchtags
+        if privacycode:
+            parameters['privacycode'] = privacycode
+        if newtrim:
+            parameters['newtrim'] = '1'
+        if sandbox:
+            parameters['sandbox'] = '1'
+        url = 'http://api.tr.im/api/trim_url.json?%s' % urlencode(parameters)
+        resp = request(url)
+        jdata = json.loads(resp.read())
+        self.status = (int(jdata['status']['code']), str(jdata['status']['message']))
+        if not 200 <= self.status[0] < 300:
+            raise ShortyError(self.status[1])
+        self.trimpath = str(jdata['trimpath'])
+        self.reference = str(jdata['reference'])
+        self.destination = str(jdata['destination'])
+        self.domain = str(jdata['domain'])
+        return str(jdata['url'])
+
+Trim = _Trim()  # non-authenticated, no apikey instance
         
