@@ -37,7 +37,7 @@ THE SOFTWARE.
 """
 
 from urllib2 import urlopen, URLError, HTTPError
-from urllib import urlencode
+from urllib import urlencode, quote
 from urlparse import urlparse
 from random import randint
 import base64
@@ -182,11 +182,45 @@ class _Trim(Service):
 
 Trim = _Trim()  # non-authenticated, no apikey instance
 
+# urlborg.com
+class _Urlborg(Service):
+
+    def __init__(self, apikey=None):
+        self.apikey = apikey
+
+    def _apikey(self, apikey):
+        if apikey:
+            return apikey
+        elif self.apikey:
+            return self.apikey
+        else:
+            raise ShortyError('Must set an apikey')
+
+    def shrink(self, bigurl, apikey=None):
+        url = 'http://urlborg.com/api/%s/create/%s' % (self._apikey(apikey), quote(bigurl))
+        resp = request(url)
+        turl = resp.read()
+        if not turl.startswith('http://'):
+            raise ShortyError(turl)
+        return turl
+
+    def expand(self, tinyurl, apikey=None):
+        turl = urlparse(tinyurl)
+        url = 'http://urlborg.com/api/%s/url/info.json%s' % (self._apikey(apikey), turl.path)
+        resp = request(url)
+        jdata = json.loads(resp.read())
+        if jdata.has_key('error'):
+            raise ShortyError('Invalid tiny url or apikey')
+        return str(jdata['o_url'])
+
+Urlborg = _Urlborg()
+
 """Mapping of domain to service class"""
 services = {
     'sandbox': Sandbox,
     'tinyurl.com': Tinyurl,
-    'tr.im': Trim
+    'tr.im': Trim,
+    'urlborg.com': Urlborg, 'ub0.cc': Urlborg,
 }
 
 """

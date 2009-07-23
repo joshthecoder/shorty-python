@@ -12,6 +12,7 @@ Supported URL shortening services:
     sandbox (stored locally in memory for testing)
     tinyurl.com  (shrink only)
     tr.im
+    urlborg.com
 
 Language: Python
 Website: http://gitorious.org/shorty
