@@ -10,11 +10,11 @@ Access many URL shortening services from one library.
 
 Supported URL shortening services:
     sandbox (stored locally in memory for testing)
-    tinyurl.com  (shrink only)
+    tinyurl.com
     tr.im
     urlborg.com
     bit.ly
-    is.gd (shrink only)
+    is.gd
     cli.gs
 
 Language: Python

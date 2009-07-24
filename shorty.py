@@ -147,6 +147,9 @@ class Tinyurl(Service):
         resp = request('http://tinyurl.com/api-create.php', {'url': bigurl})
         return resp.read()
 
+    def expand(self, tinyurl):
+        return get_redirect(tinyurl)
+
 tinyurl = Tinyurl()
 
 # tr.im
@@ -283,6 +286,9 @@ class Isgd(Service):
             raise ShortyError(turl)
         return turl
 
+    def expand(self, tinyurl):
+        return get_redirect(tinyurl)
+
 isgd = Isgd()
 
 # cli.gs
@@ -305,8 +311,9 @@ class Cligs(Service):
 
     def expand(self, tinyurl):
         # TODO: debug this some more, not working properly
-        resp = request('http://cli.gs/api/v1/cligs/expand', {'clig': tinyurl})
-        return resp.read()
+        '''resp = request('http://cli.gs/api/v1/cligs/expand', {'clig': tinyurl})
+        return resp.read()'''
+        return get_redirect(tinyurl)
 
 cligs = Cligs()
 
