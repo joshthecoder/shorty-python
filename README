@@ -13,6 +13,7 @@ Supported URL shortening services:
     tinyurl.com  (shrink only)
     tr.im
     urlborg.com
+    bit.ly
 
 Language: Python
 Website: http://gitorious.org/shorty

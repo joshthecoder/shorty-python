@@ -221,12 +221,58 @@ class Urlborg(Service):
 
 urlborg = Urlborg()
 
+class Bitly(Service):
+
+    version = '2.0.1'
+
+    def __init__(self, login=None, apikey=None, password=None):
+        self.login = login
+        self.apikey = apikey
+        self.password = password
+
+    def _setup(self):
+        parameters = {'version': self.version}
+        if self.apikey:
+            parameters['apiKey'] = self.apikey
+            parameters['login'] = self.login
+            username_pass = None
+        elif self.password:
+            username_pass = (self.login, self.password)
+        else:
+            raise ShortyError('Must set an apikey or password')
+        return parameters, username_pass
+
+    def shrink(self, bigurl):
+        if not self.login:
+            raise ShortyError('Must set a login')
+        parameters, username_pass = self._setup()
+        parameters['longUrl'] = bigurl
+        resp = request('http://api.bit.ly/shorten', parameters, username_pass)
+        jdata = json.loads(resp.read())
+        if jdata['errorCode'] != 0:
+            raise ShortyError(jdata['errorMessage'])
+        return str(jdata['results'][bigurl]['shortUrl'])
+
+    def expand(self, tinyurl):
+        if not self.login:
+            raise ShortyError('Must set a login')
+        parameters, username_pass = self._setup()
+        parameters['shortUrl'] = tinyurl
+        resp = request('http://api.bit.ly/expand', parameters, username_pass)
+        jdata = json.loads(resp.read())
+        if jdata['errorCode'] != 0:
+            raise ShortyError(jdata['errorMessage'])
+        return str(jdata['results'].values()[0]['longUrl'])
+
+bitly = Bitly()
+
 """Mapping of domain to service class"""
 services = {
     'sandbox': sandbox,
     'tinyurl.com': tinyurl,
     'tr.im': trim,
     'urlborg.com': urlborg, 'ub0.cc': urlborg,
+    'bit.ly': bitly
 }
 
 """
