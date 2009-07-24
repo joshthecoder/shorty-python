@@ -16,6 +16,7 @@ Supported URL shortening services:
     bit.ly
     is.gd
     cli.gs
+    twurl.nl (tweetburner)
 
 Language: Python
 Website: http://gitorious.org/shorty

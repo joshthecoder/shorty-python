@@ -56,7 +56,7 @@ class ShortyError(Exception):
         return repr(self.reason)
 
 """Do a http request"""
-def request(url, parameters=None, username_pass=None):
+def request(url, parameters=None, username_pass=None, post_data=None):
 
     # build url + parameters
     if parameters:
@@ -72,6 +72,8 @@ def request(url, parameters=None, username_pass=None):
     # send request
     try:
         req = Request(url_params, headers=headers)
+        if post_data:
+            req.add_data(post_data)
         return urlopen(req)
     except URLError, e:
         raise ShortyError(e)
@@ -96,13 +98,13 @@ def get_redirect(url):
 """Base interface that all services implement."""
 class Service(object):
 
-    def shrink(bigurl):
+    def shrink(self, bigurl):
         """Take a big url and make it smaller"""
 
         return None
 
-    def expand(tinyurl):
-        return None
+    def expand(self, tinyurl):
+        return get_redirect(tinyurl)
 
 """ Services """
 
@@ -146,9 +148,6 @@ class Tinyurl(Service):
     def shrink(self, bigurl):
         resp = request('http://tinyurl.com/api-create.php', {'url': bigurl})
         return resp.read()
-
-    def expand(self, tinyurl):
-        return get_redirect(tinyurl)
 
 tinyurl = Tinyurl()
 
@@ -286,9 +285,6 @@ class Isgd(Service):
             raise ShortyError(turl)
         return turl
 
-    def expand(self, tinyurl):
-        return get_redirect(tinyurl)
-
 isgd = Isgd()
 
 # cli.gs
@@ -317,6 +313,15 @@ class Cligs(Service):
 
 cligs = Cligs()
 
+# tweetburner.com
+class Tweetburner(Service):
+
+    def shrink(self, bigurl):
+        resp = request('http://tweetburner.com/links', post_data='link[url]=%s' % bigurl)
+        return resp.read()
+
+tweetburner = Tweetburner()
+
 """Mapping of domain to service class"""
 services = {
     'sandbox': sandbox,
@@ -325,7 +330,8 @@ services = {
     'urlborg.com': urlborg, 'ub0.cc': urlborg,
     'bit.ly': bitly,
     'is.gd': isgd,
-    'cli.gs': cligs
+    'cli.gs': cligs,
+    'tweetburner': tweetburner, 'twurl.nl': tweetburner
 }
 
 """
