@@ -56,7 +56,7 @@ class ShortyError(Exception):
         return repr(self.reason)
 
 """Do a http request"""
-def request(url, parameters=None, headers={}, username_pass=None):
+def request(url, parameters=None, username_pass=None):
 
     # build url + parameters
     if parameters:
@@ -65,16 +65,13 @@ def request(url, parameters=None, headers={}, username_pass=None):
         url_params = url
 
     # if username and pass supplied, build basic auth header
+    headers = {}
     if username_pass:
-        _headers = {}
-        _headers.update(headers)
-        _headers['Authorization'] = 'Basic %s' % base64.b64encode('%s:%s' % username_pass)
-    else:
-        _headers = headers
+        headers['Authorization'] = 'Basic %s' % base64.b64encode('%s:%s' % username_pass)
 
     # send request
     try:
-        req = Request(url_params, headers=_headers)
+        req = Request(url_params, headers=headers)
         return urlopen(req)
     except URLError, e:
         raise ShortyError(e)
@@ -131,8 +128,8 @@ class Tinyurl(Service):
 
     @staticmethod
     def shrink(bigurl):
-        resp = request('http://tinyurl.com/api-create.php?url=%s' % bigurl)
-        return resp.readline()
+        resp = request('http://tinyurl.com/api-create.php', {'url': bigurl})
+        return resp.read()
 
     @staticmethod
     def expand(tinyurl):
@@ -144,17 +141,13 @@ tinyurl = Tinyurl
 # tr.im
 class Trim(Service):
 
-    def __init__(self, apikey=None, username=None, password=None):
-        self.base_param = {}
-        if apikey:
-            self.base_param['api_key'] = apikey
-        if username and password:
-            self.base_param['Authorization'] = basic_auth(username, password)
+    def __init__(self, apikey=None, username_pass=None):
+        self.apikey = apikey
+        self.username_pass = username_pass
 
     def shrink(self, bigurl, custom=None, searchtags=None, privacycode=None,
                 newtrim=False, sandbox=False):
         parameters = {}
-        parameters.update(self.base_param)
         parameters['url'] = bigurl
         if custom:
             parameters['custom'] = custom
@@ -166,8 +159,9 @@ class Trim(Service):
             parameters['newtrim'] = '1'
         if sandbox:
             parameters['sandbox'] = '1'
-        url = 'http://api.tr.im/api/trim_url.json?%s' % urlencode(parameters)
-        resp = request(url)
+        if self.apikey:
+            parameters['api_key'] = self.apikey
+        resp = request('http://api.tr.im/api/trim_url.json', parameters, self.username_pass)
         jdata = json.loads(resp.read())
         self.status = (int(jdata['status']['code']), str(jdata['status']['message']))
         if not 200 <= self.status[0] < 300:
@@ -182,18 +176,17 @@ class Trim(Service):
         turl = urlparse(tinyurl)
         if turl.netloc != 'tr.im' and turl.netloc != 'www.tr.im':
             raise ShortyError('Not a valid tr.im url')
-        parameters = {}
-        parameters.update(self.base_param)
-        parameters['trimpath'] = turl.path.strip('/')
-        url = 'http://api.tr.im/api/trim_destination.json?%s' % urlencode(parameters)
-        resp = request(url)
+        parameters = {'trimpath': turl.path.strip('/')}
+        if self.apikey:
+            parameters['api_key'] = self.apikey
+        resp = request('http://api.tr.im/api/trim_destination.json', parameters)
         jdata = json.loads(resp.read())
         self.status = (int(jdata['status']['code']), str(jdata['status']['message']))
         if not 200 <= self.status[0] < 300:
             raise ShortyError(self.status[1])
         return str(jdata['destination'])
 
-trim = Trim()  # non-authenticated, no apikey instance
+trim = Trim()
 
 # urlborg.com
 class Urlborg(Service):
