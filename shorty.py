@@ -36,7 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from urllib2 import urlopen, URLError, HTTPError
+from urllib2 import urlopen, Request, URLError, HTTPError
 from urllib import urlencode, quote
 from urlparse import urlparse
 from random import randint
@@ -55,18 +55,29 @@ class ShortyError(Exception):
     def __str__(self):
         return repr(self.reason)
 
-"""Wrap urlopen to raise shorty errors instead"""
-def request(*args, **kargs):
+"""Do a http request"""
+def request(url, parameters=None, headers={}, username_pass=None):
 
+    # build url + parameters
+    if parameters:
+        url_params = '%s?%s' % (url, urlencode(parameters))
+    else:
+        url_params = url
+
+    # if username and pass supplied, build basic auth header
+    if username_pass:
+        _headers = {}
+        _headers.update(headers)
+        _headers['Authorization'] = 'Basic %s' % base64.b64encode('%s:%s' % username_pass)
+    else:
+        _headers = headers
+
+    # send request
     try:
-        return urlopen(*args, **kargs)
+        req = Request(url_params, headers=_headers)
+        return urlopen(req)
     except URLError, e:
         raise ShortyError(e)
-
-"""Build basic auth header value"""
-def basic_auth(username, password):
-
-    return 'Basic %s' % base64.b64encode('%s:%s' % (username, password))
 
 """Base interface that all services implement."""
 class Service(object):
