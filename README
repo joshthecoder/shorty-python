@@ -15,6 +15,7 @@ Supported URL shortening services:
     urlborg.com
     bit.ly
     is.gd (shrink only)
+    cli.gs
 
 Language: Python
 Website: http://gitorious.org/shorty
