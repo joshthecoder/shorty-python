@@ -36,7 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from urllib2 import urlopen, Request, URLError, HTTPError
+from urllib2 import urlopen, Request, URLError, HTTPError, HTTPRedirectHandler, build_opener
 from urllib import urlencode, quote
 from urlparse import urlparse
 from random import randint
@@ -75,6 +75,23 @@ def request(url, parameters=None, username_pass=None):
         return urlopen(req)
     except URLError, e:
         raise ShortyError(e)
+
+def get_redirect(url):
+
+    class StopRedirectHandler(HTTPRedirectHandler):
+        def http_error_301(self, req, fp, code, smg, headers):
+            return None
+    o = build_opener(StopRedirectHandler())
+    try:
+        o.open(url)
+    except HTTPError, e:
+        if e.code == 301:
+            return e.headers['Location']
+        else:
+            raise ShortyError(e)
+    except URLError, e:
+        raise ShortyError(e)
+    return None
 
 """Base interface that all services implement."""
 class Service(object):
