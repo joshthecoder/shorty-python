@@ -126,17 +126,11 @@ sandbox = Sandbox()
 # tinyurl.com
 class Tinyurl(Service):
 
-    @staticmethod
-    def shrink(bigurl):
+    def shrink(self, bigurl):
         resp = request('http://tinyurl.com/api-create.php', {'url': bigurl})
         return resp.read()
 
-    @staticmethod
-    def expand(tinyurl):
-        # TODO: implement
-        return None
-
-tinyurl = Tinyurl
+tinyurl = Tinyurl()
 
 # tr.im
 class Trim(Service):
