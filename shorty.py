@@ -262,13 +262,26 @@ class Bitly(Service):
 
 bitly = Bitly()
 
+# is.gd
+class Isgd(Service):
+
+    def shrink(self, bigurl):
+        resp = request('http://is.gd/api.php', {'longurl': bigurl})
+        turl = resp.read()
+        if turl.startswith('Error:'):
+            raise ShortyError(turl)
+        return turl
+
+isgd = Isgd()
+
 """Mapping of domain to service class"""
 services = {
     'sandbox': sandbox,
     'tinyurl.com': tinyurl,
     'tr.im': trim,
     'urlborg.com': urlborg, 'ub0.cc': urlborg,
-    'bit.ly': bitly
+    'bit.ly': bitly,
+    'is.gd': isgd
 }
 
 """
