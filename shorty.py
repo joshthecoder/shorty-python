@@ -346,8 +346,8 @@ def shrink(service_domain, bigurl, *args, **kargs):
     return s.shrink(bigurl, *args, **kargs)
     
 """
-Auto detect service and expand the tiny url.
-Returns the expanded url or None if service not supported.
+Expand tiny url into its full url.
+Returns long url if successful or None if failure.
 """
 def expand(tinyurl):
 
@@ -358,7 +358,6 @@ def expand(tinyurl):
         domain = domain[4:]
     s = services.get(domain)
     if not s:
-        # service not supported
-        return None
+        return get_redirect(tinyurl)
     return s.expand(tinyurl)
 

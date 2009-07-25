@@ -8,7 +8,7 @@
 
 Access many URL shortening services from one library.
 
-Supported URL shortening services:
+Supported URL shortening services for shrinking long urls:
     sandbox (stored locally in memory for testing)
     tinyurl.com
     tr.im
@@ -17,6 +17,11 @@ Supported URL shortening services:
     is.gd
     cli.gs
     twurl.nl (tweetburner)
+
+Shorty can expand any url service by getting the redirect
+location by requesting the tiny url.
+
+See example.py for a demo of using this library.
 
 Language: Python
 Website: http://gitorious.org/shorty
@@ -30,4 +35,3 @@ Install:
     If using a version of python before 2.6 you will also need
     to have simplejson installed.
 
-See example.py for a demo of using this library.
