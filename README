@@ -17,6 +17,7 @@ Supported URL shortening services for shrinking long urls:
     is.gd
     cli.gs
     twurl.nl (tweetburner)
+    digg.com
 
 Shorty can expand any url service by getting the redirect
 location by requesting the tiny url.
