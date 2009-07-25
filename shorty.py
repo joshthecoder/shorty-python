@@ -219,7 +219,7 @@ class Urlborg(Service):
 
     def expand(self, tinyurl):
         if not self.apikey:
-            raise ShortyError('Must set an apikey')
+            return get_redirect(get_redirect(tinyurl))
         turl = urlparse(tinyurl)
         url = 'http://urlborg.com/api/%s/url/info.json%s' % (self.apikey, turl.path)
         resp = request(url)
@@ -264,7 +264,7 @@ class Bitly(Service):
 
     def expand(self, tinyurl):
         if not self.login:
-            raise ShortyError('Must set a login')
+            return get_redirect(tinyurl)
         parameters, username_pass = self._setup()
         parameters['shortUrl'] = tinyurl
         resp = request('http://api.bit.ly/expand', parameters, username_pass)
