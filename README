@@ -8,6 +8,13 @@
 
 Access many URL shortening services from one library.
 
+Language: Python
+Website: http://gitorious.org/shorty
+Repository: git://gitorious.org/shorty/python.git
+Requirements:
+    Python 2.4+
+    Simplejson (not required in python 2.6+)
+
 Supported URL shortening services for shrinking long urls:
     sandbox (stored locally in memory for testing)
     tinyurl.com
@@ -29,23 +36,17 @@ location by requesting the tiny url.
 
 See example.py for a demo of using this library.
 
-Language: Python
-Website: http://gitorious.org/shorty
-Repository: git://gitorious.org/shorty/python.git
-Requirements:
-    Python 2.4+
-    Simplejson (not required in python 2.6+)
-
 Build:
     Each URL service is implemented in its own module inside the services
     folder. To use this library you must compile all the various modules together.
-    To compile you will use the compile.py script. Here is its usage:
+    To compile you will use the compile.py script.
 
         python compile.py <services>
 
-    <services> is a space seperated list of the services you want included.
+    <services> is a space separated list of the services you want include.
     If you wish to use all supported services use the --all flag instead.
     After the script runs a file named 'shorty.py' will appear.
+    This is the module you will be using inside your projects.
     A copy of the full shorty.py module will be kept in this repository.
 
 Install:
