@@ -34,7 +34,7 @@ Website: http://gitorious.org/shorty
 Repository: git://gitorious.org/shorty/python.git
 Requirements:
     Python 2.4+
-    Simplejson (only version of python before 2.6)
+    Simplejson (not required in python 2.6+)
 
 Install:
     Simply include the shorty.py module in your python path.
