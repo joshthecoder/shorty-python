@@ -465,6 +465,42 @@ class Fwd4me(Service):
 
 fwd4me = Fwd4me()
 
+# chilp.it
+class Chilpit(Service):
+
+    def shrink(self, bigurl):
+        resp = request('http://chilp.it/api.php', {'url': bigurl})
+        url = resp.read()
+        if url.startswith('http://'):
+            return url
+        else:
+            raise ShortyError(url)
+
+    def expand(self, tinyurl):
+        turl = urlparse(tinyurl)
+        if turl.netloc.lstrip('www.') != 'chilp.it':
+            raise ShortyError('Not a chilp.it url')
+        resp = request('http://p.chilp.it/api.php?' + turl.path.strip('/'))
+        url = resp.read()
+        if url.startswith('http://'):
+            return url
+        else:
+            raise ShortyError(url)
+
+    # get click stats of the tinyurl
+    def stats(self, tinyurl):
+        turl = urlparse(tinyurl)
+        if turl.netloc.lstrip('www.') != 'chilp.it':
+            raise ShortyError('Not a chilp.it url')
+        resp = request('http://s.chilp.it/api.php?' + turl.query)
+        hit_count = resp.read()
+        try:
+            return int(hit_count)
+        except:
+            raise ShortyError('Url not found or invalid')
+
+chilpit = Chilpit()
+
 """Mapping of domain to service class"""
 services = {
     'sandbox': sandbox,
@@ -479,7 +515,8 @@ services = {
     'a.gd': agd,
     'buk.me': bukme,
     'fon.gs': fongs,
-    'fwd4.me': fwd4me
+    'fwd4.me': fwd4me,
+    'chilp.it': chilpit
 }
 
 """
