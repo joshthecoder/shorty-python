@@ -36,6 +36,18 @@ Requirements:
     Python 2.4+
     Simplejson (not required in python 2.6+)
 
+Build:
+    Each URL service is implemented in its own module inside the services
+    folder. To use this library you must compile all the various modules together.
+    To compile you will use the compile.py script. Here is its usage:
+
+        python compile.py <services>
+
+    <services> is a space seperated list of the services you want included.
+    If you wish to use all supported services use the --all flag instead.
+    After the script runs a file named 'shorty.py' will appear.
+    A copy of the full shorty.py module will be kept in this repository.
+
 Install:
     Simply include the shorty.py module in your python path.
     If using a version of python before 2.6 you will also need
