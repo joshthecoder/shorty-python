@@ -83,11 +83,13 @@ def get_redirect(url):
     class StopRedirectHandler(HTTPRedirectHandler):
         def http_error_301(self, req, fp, code, smg, headers):
             return None
+        def http_error_302(self, req, fp, code, smg, headers):
+            return None
     o = build_opener(StopRedirectHandler())
     try:
         o.open(url)
     except HTTPError, e:
-        if e.code == 301:
+        if e.code == 301 or e.code == 302:
             return e.headers['Location']
         else:
             raise ShortyError(e)
@@ -359,6 +361,26 @@ class Digg(Service):
 
 digg = Digg()
 
+class Agd(Service):
+
+    def shrink(self, bigurl, tag=None, password=None, expires=None):
+        post_param = {'url': bigurl}
+        if tag:
+            post_param['tag'] = tag
+        if password:
+            post_param['pass'] = password
+        if expires:
+            post_param['validTill'] = expires
+        resp = request('http://a.gd/?module=ShortURL&file=Add&mode=API',
+                        post_data = urlencode(post_param))
+        url = resp.read()
+        if url.startswith('http://'):
+            return url
+        else:
+            raise ShortyError(url[url.find('>')+1:url.rfind('<')])
+
+agd = Agd()
+
 """Mapping of domain to service class"""
 services = {
     'sandbox': sandbox,
@@ -369,7 +391,8 @@ services = {
     'is.gd': isgd,
     'cli.gs': cligs,
     'tweetburner': tweetburner, 'twurl.nl': tweetburner,
-    'digg.com': digg
+    'digg.com': digg,
+    'a.gd': agd
 }
 
 """
