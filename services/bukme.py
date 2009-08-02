@@ -2,7 +2,7 @@
 ## Copyright 2009 Joshua Roesslein
 ## See LICENSE
 
-# buk.me
+## @url buk.me
 class Bukme(Service):
 
     def _process(self, resp):

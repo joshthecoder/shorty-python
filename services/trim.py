@@ -2,7 +2,7 @@
 ## Copyright 2009 Joshua Roesslein
 ## See LICENSE
 
-# tr.im
+## @url tr.im
 class Trim(Service):
 
     def __init__(self, apikey=None, username_pass=None):

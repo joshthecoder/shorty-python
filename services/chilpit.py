@@ -2,7 +2,7 @@
 ## Copyright 2009 Joshua Roesslein
 ## See LICENSE
 
-# chilp.it
+## @url chilp.it
 class Chilpit(Service):
 
     def shrink(self, bigurl):

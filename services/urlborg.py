@@ -2,7 +2,7 @@
 ## Copyright 2009 Joshua Roesslein
 ## See LICENSE
 
-# urlborg.com
+## @url urlborg.com ub0.cc
 class Urlborg(Service):
 
     def __init__(self, apikey=None):

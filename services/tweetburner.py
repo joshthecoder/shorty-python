@@ -2,7 +2,7 @@
 ## Copyright 2009 Joshua Roesslein
 ## See LICENSE
 
-# tweetburner.com
+## @url tweetburner.com twurl.nl
 class Tweetburner(Service):
 
     def shrink(self, bigurl):

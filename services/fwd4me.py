@@ -2,7 +2,7 @@
 ## Copyright 2009 Joshua Roesslein
 ## See LICENSE
 
-# fwd4.me
+## @url fwd4.me
 class Fwd4me(Service):
 
     ecodes = {

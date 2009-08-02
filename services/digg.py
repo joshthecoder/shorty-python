@@ -2,7 +2,7 @@
 ## Copyright 2009 Joshua Roesslein
 ## See LICENSE
 
-# digg
+## @url digg.com
 class Digg(Service):
 
     def __init__(self, appkey=None):

@@ -2,7 +2,7 @@
 ## Copyright 2009 Joshua Roesslein
 ## See LICENSE
 
-# a.gd
+## @url a.gd
 class Agd(Service):
 
     def shrink(self, bigurl, tag=None, password=None, expires=None):

@@ -2,6 +2,8 @@
 ## Copyright 2009 Joshua Roesslein
 ## See LICENSE
 
+## @url sandbox.com
+## used for testing
 class Sandbox(Service):
 
     def __init__(self, length=4, letters='abcdefghijklmnopqrstuvwxyz'):
@@ -24,12 +26,12 @@ class Sandbox(Service):
 
         # store url and return tiny link
         self.urls[tpath] = bigurl
-        return 'http://sandbox/' + tpath
+        return 'http://sandbox.com/' + tpath
 
     def expand(self, tinyurl):
         # lookup big url and return
         turl = urlparse(tinyurl)
-        if turl.netloc != 'sandbox':
+        if turl.netloc != 'sandbox.com':
             raise ShortyError('Not a sandbox url')
         return self.urls.get(turl.path.strip('/'))
 

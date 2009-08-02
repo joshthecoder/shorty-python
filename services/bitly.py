@@ -2,7 +2,7 @@
 ## Copyright 2009 Joshua Roesslein
 ## See LICENSE
 
-# bit.ly
+## @url bit.ly
 class Bitly(Service):
 
     version = '2.0.1'

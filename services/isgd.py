@@ -2,7 +2,7 @@
 ## Copyright 2009 Joshua Roesslein
 ## See LICENSE
 
-# is.gd
+## @url is.gd
 class Isgd(Service):
 
     def shrink(self, bigurl):

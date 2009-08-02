@@ -1,7 +1,7 @@
 ## Shorty
 ## Copyright 2009 Joshua Roesslein
 
-# cli.gs
+## @url cli.gs
 class Cligs(Service):
 
     def __init__(self, apikey=None, appid=None):

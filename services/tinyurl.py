@@ -2,7 +2,7 @@
 ## Copyright 2009 Joshua Roesslein
 ## See LICENSE
 
-# tinyurl.com
+## @url tinyurl.com
 class Tinyurl(Service):
 
     def shrink(self, bigurl):
