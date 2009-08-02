@@ -21,6 +21,7 @@ Supported URL shortening services for shrinking long urls:
     a.gd
     buk.me
     fon.gs
+    fwd4.me
 
 Shorty can expand any url service by getting the redirect
 location by requesting the tiny url.

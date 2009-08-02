@@ -406,6 +406,7 @@ class Bukme(Service):
 
 bukme = Bukme()
 
+# fon.gs
 class Fongs(Service):
 
     def shrink(self, bigurl, tag=None):
@@ -433,14 +434,36 @@ class Fongs(Service):
         else:
             raise ShortyError(data)
 
-    def expand(self, bigurl):
-        if bigurl[-1] != '/':
-            burl = bigurl + '/'
+    def expand(self, tinyurl):
+        if tinyurl[-1] != '/':
+            turl = tinyurl + '/'
         else:
-            burl = bigurl
-        return Service.expand(self, burl)
+            turl = tinyurl
+        return Service.expand(self, turl)
 
 fongs = Fongs()
+
+# fwd4.me
+class Fwd4me(Service):
+
+    ecodes = {
+        '1': 'Invalid long url',
+        '2': 'Invalid api key',
+        '3': 'Account suspended or revoked',
+        '4': 'Long url is black listed',
+        '5': 'Internal system error'
+    }
+
+    def shrink(self, bigurl):
+        resp = request('http://api.fwd4.me/', {'url': bigurl})
+        data = resp.read()
+        if data.startswith('ERROR:'):
+            ecode = data.lstrip('ERROR:')
+            raise ShortyError(Fwd4me.ecodes.get(ecode, 'Unkown error'))
+        else:
+            return data
+
+fwd4me = Fwd4me()
 
 """Mapping of domain to service class"""
 services = {
@@ -455,7 +478,8 @@ services = {
     'digg.com': digg,
     'a.gd': agd,
     'buk.me': bukme,
-    'fon.gs': fongs
+    'fon.gs': fongs,
+    'fwd4.me': fwd4me
 }
 
 """
