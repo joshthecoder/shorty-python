@@ -57,6 +57,20 @@ def get_redirect(url):
 """Base interface that all services implement."""
 class Service(object):
 
+    tested = False
+
+    def _test(self):
+        self.tested = True
+
+        # first shrink an url
+        turl = self.shrink('http://test.com')
+
+        # second expand url and verify
+        if self.expand(turl) == 'http://test.com':
+            return True
+        else:
+            return False
+
     def shrink(self, bigurl):
         """Take a big url and make it smaller"""
         return None

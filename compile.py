@@ -84,6 +84,7 @@ if __name__ == '__main__':
         print 'Usage: compile.py <services>'
         print '  services -- names of the services to include in compiled module'
         print 'Example: compile.py sandbox tinyurl bitly'
+        sys.exit(1)
 
     # get list of services to compile
     if sys.argv[1] == '--all':
