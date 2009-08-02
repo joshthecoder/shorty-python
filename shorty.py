@@ -361,6 +361,7 @@ class Digg(Service):
 
 digg = Digg()
 
+# a.gd
 class Agd(Service):
 
     def shrink(self, bigurl, tag=None, password=None, expires=None):
@@ -381,6 +382,30 @@ class Agd(Service):
 
 agd = Agd()
 
+# buk.me
+class Bukme(Service):
+
+    def _process(self, resp):
+        # bukme returns some markup after the url, so chop it off
+        url = resp[:resp.find('<')]
+        if url.startswith('http://'):
+            return url
+        else:
+            raise ShortyError(url)
+
+    def shrink(self, bigurl, tag=None):
+        parameters = {'url': bigurl}
+        if tag:
+            parameters['buk'] = tag
+        resp = request('http://buk.me/api.php', parameters)
+        return self._process(resp.read())
+
+    def expand(self, tinyurl):
+        resp = request('http://buk.me/api.php', {'rev': tinyurl})
+        return self._process(resp.read())
+
+bukme = Bukme()        
+
 """Mapping of domain to service class"""
 services = {
     'sandbox': sandbox,
@@ -392,7 +417,8 @@ services = {
     'cli.gs': cligs,
     'tweetburner': tweetburner, 'twurl.nl': tweetburner,
     'digg.com': digg,
-    'a.gd': agd
+    'a.gd': agd,
+    'buk.me': bukme
 }
 
 """
