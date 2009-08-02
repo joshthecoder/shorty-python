@@ -404,7 +404,43 @@ class Bukme(Service):
         resp = request('http://buk.me/api.php', {'rev': tinyurl})
         return self._process(resp.read())
 
-bukme = Bukme()        
+bukme = Bukme()
+
+class Fongs(Service):
+
+    def shrink(self, bigurl, tag=None):
+        parameters = {'url': bigurl}
+        if tag:
+            parameters['linkname'] = tag
+        resp = request('http://fon.gs/create.php', parameters)
+        data = resp.read()
+        if data.startswith('OK:'):
+            return data.lstrip('OK: ')
+        elif data.startswith('MODIFIED:'):
+            return data.lstrip('MODIFIED: ')
+        else:
+            raise ShortyError(data)
+
+    # check if the given tag is taken
+    # returns true if available false if taken
+    def check(self, tag):
+        resp = request('http://fon.gs/check.php', {'linkname': tag})
+        data = resp.read()
+        if data.startswith('AVAILABLE'):
+            return True
+        elif data.startswith('TAKEN'):
+            return False
+        else:
+            raise ShortyError(data)
+
+    def expand(self, bigurl):
+        if bigurl[-1] != '/':
+            burl = bigurl + '/'
+        else:
+            burl = bigurl
+        return Service.expand(self, burl)
+
+fongs = Fongs()
 
 """Mapping of domain to service class"""
 services = {
@@ -418,7 +454,8 @@ services = {
     'tweetburner': tweetburner, 'twurl.nl': tweetburner,
     'digg.com': digg,
     'a.gd': agd,
-    'buk.me': bukme
+    'buk.me': bukme,
+    'fon.gs': fongs
 }
 
 """
