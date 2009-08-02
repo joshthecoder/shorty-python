@@ -100,10 +100,10 @@ class Service(object):
 
     def shrink(self, bigurl):
         """Take a big url and make it smaller"""
-
         return None
 
     def expand(self, tinyurl):
+        """Take a tiny url and make it bigger"""
         return get_redirect(tinyurl)
 
 """ Services """
