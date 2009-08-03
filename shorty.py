@@ -462,6 +462,23 @@ class Agd(Service):
 
 agd = Agd()
 
+# shortto
+class Shortto(Service):
+
+    def shrink(self, bigurl):
+        resp = request('http://short.to/s.txt', {'url': bigurl})
+        return resp.read()
+
+    def expand(self, tinyurl):
+        resp = request('http://long.to/do.txt', {'url': tinyurl})
+        url = resp.read()
+        if url.startswith('http'):
+            return url
+        else:
+            raise ShortyError(url)
+
+shortto = Shortto()
+
 # digg
 class Digg(Service):
 
@@ -612,6 +629,7 @@ bukme = Bukme()
 
 services = {
     'a.gd': agd,
+    'short.to': shortto,
     'chilp.it': chilpit,
     'digg.com': digg,
     'tweetburner.com': tweetburner,

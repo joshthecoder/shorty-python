@@ -31,6 +31,7 @@ Supported URL shortening services for shrinking long urls:
     fwd4.me
     chilp.it
     short.ie
+    short.to
 
 Shorty can expand any url service by getting the redirect
 location by requesting the tiny url.
