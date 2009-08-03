@@ -32,6 +32,8 @@ Supported URL shortening services for shrinking long urls:
     chilp.it
     short.ie
     short.to
+    to.ly
+    budurl.com
 
 Shorty can expand any url service by getting the redirect
 location by requesting the tiny url.

@@ -292,6 +292,7 @@ class Toly(Service):
     def shrink(self, bigurl):
         resp = request('http://to.ly/api.php', {'longurl': bigurl})
         return resp.read()
+
 toly = Toly()
 
 # fongs
@@ -398,6 +399,40 @@ class Bitly(Service):
         return str(jdata['results'].values()[0]['longUrl'])
 
 bitly = Bitly()
+
+# budurl
+class Budurl(Service):
+
+    def __init__(self, apikey=None):
+        self.apikey = apikey
+
+    def _test(self):
+        #prompt for apikey
+        self.apikey = raw_input('budurl apikey: ')
+        Service._test(self)
+
+    def shrink(self, bigurl, notes=None):
+        if self.apikey is None:
+            raise ShortyError('Must set an apikey')
+        parameters = {'long_url': bigurl, 'api_key': self.apikey}
+        if notes:
+            parameters['notes'] = notes
+        resp = request('http://budurl.com/api/v1/budurls/shrink', parameters)
+        jdata = json.loads(resp.read())
+        if jdata['success'] != 1:
+            raise ShortyError(jdata['error_message'])
+        else:
+            return str(jdata['budurl'])
+
+    def expand(self, tinyurl):
+        resp = request('http://budurl.com/api/v1/budurls/expand', {'budurl': tinyurl})
+        jdata = json.loads(resp.read())
+        if jdata['success'] != 1:
+            raise ShortyError(jdata['error_message'])
+        else:
+            return str(jdata['long_url'])
+
+budurl = Budurl()
 
 # trim
 class Trim(Service):
@@ -634,7 +669,7 @@ bukme = Bukme()
 services = {
     'a.gd': agd,
     'short.to': shortto,
-    'chilp.it': chilpit,
+    'budurl.com': budurl,
     'digg.com': digg,
     'tweetburner.com': tweetburner,
     'tr.im': trim,
@@ -644,6 +679,7 @@ services = {
     'urlborg.com': urlborg,
     'is.gd': isgd,
     'fon.gs': fongs,
+    'chilp.it': chilpit,
     'ub0.cc': urlborg,
     'tinyurl.com': tinyurl,
     'bit.ly': bitly,
