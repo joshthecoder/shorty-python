@@ -15,6 +15,7 @@ class Digg(Service):
         Service._test(self)
 
     def shrink(self, bigurl):
+        # FIXME: python 2.4 runs into a 403 error for some reason
         if not self.appkey:
             raise ShortyError('Must set an appkey')
         resp = request('http://services.digg.com/url/short/create',
@@ -27,10 +28,10 @@ class Digg(Service):
     def expand(self, tinyurl):
         if self.appkey:
             turl = urlparse(tinyurl)
-            if turl.netloc != 'digg.com' and turl.netloc != 'www.digg.com':
+            if turl[1].lstrip('www.') != 'digg.com':
                 raise ShortyError('Not a valid digg url')
             resp = request('http://services.digg.com/url/short/%s' % quote(
-                            turl.path.strip('/')),
+                            turl[2].strip('/')),
                             {'appkey': self.appkey, 'type': 'json'})
             jdata = json.loads(resp.read())['shorturls'][0]
             self.itemid = jdata['itemid']

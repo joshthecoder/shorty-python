@@ -38,9 +38,9 @@ class Trim(Service):
 
     def expand(self, tinyurl):
         turl = urlparse(tinyurl)
-        if turl.netloc != 'tr.im' and turl.netloc != 'www.tr.im':
+        if turl[1].lstrip('www.') != 'tr.im':
             raise ShortyError('Not a valid tr.im url')
-        parameters = {'trimpath': turl.path.strip('/')}
+        parameters = {'trimpath': turl[2].strip('/')}
         if self.apikey:
             parameters['api_key'] = self.apikey
         resp = request('http://api.tr.im/api/trim_destination.json', parameters)

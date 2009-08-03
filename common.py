@@ -63,13 +63,19 @@ class Service(object):
         self.tested = True
 
         # first shrink an url
-        turl = self.shrink('http://test.com')
+        try:
+            turl = self.shrink('http://test.com')
+        except ShortyError, e:
+            raise ShortyError('@shrink ' + e.reason)
 
         # second expand url and verify
-        if self.expand(turl) == 'http://test.com':
-            return True
-        else:
-            return False
+        try:
+            if self.expand(turl) == 'http://test.com':
+                return True
+            else:
+                return False
+        except ShortyError, e:
+            raise ShortyError('@expand ' + e.reason)
 
     def shrink(self, bigurl):
         """Take a big url and make it smaller"""

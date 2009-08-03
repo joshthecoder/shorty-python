@@ -18,9 +18,9 @@ class Chilpit(Service):
 
         # needs fixing
         """turl = urlparse(tinyurl)
-        if turl.netloc.lstrip('www.') != 'chilp.it':
+        if turl[1].lstrip('www.') != 'chilp.it':
             raise ShortyError('Not a chilp.it url')
-        resp = request('http://p.chilp.it/api.php?' + turl.query)
+        resp = request('http://p.chilp.it/api.php?' + turl[4])
         url = resp.read()
         if url.startswith('http://'):
             return url.strip('\n\r')
@@ -30,9 +30,9 @@ class Chilpit(Service):
     # get click stats of the tinyurl
     def stats(self, tinyurl):
         turl = urlparse(tinyurl)
-        if turl.netloc.lstrip('www.') != 'chilp.it':
+        if turl[1].lstrip('www.') != 'chilp.it':
             raise ShortyError('Not a chilp.it url')
-        resp = request('http://s.chilp.it/api.php?' + turl.query)
+        resp = request('http://s.chilp.it/api.php?' + turl[4])
         hit_count = resp.read()
         try:
             return int(hit_count)

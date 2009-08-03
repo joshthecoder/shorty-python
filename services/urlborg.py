@@ -27,7 +27,7 @@ class Urlborg(Service):
         if not self.apikey:
             return get_redirect(get_redirect(tinyurl))
         turl = urlparse(tinyurl)
-        url = 'http://urlborg.com/api/%s/url/info.json%s' % (self.apikey, turl.path)
+        url = 'http://urlborg.com/api/%s/url/info.json%s' % (self.apikey, turl[2])
         resp = request(url)
         jdata = json.loads(resp.read())
         if jdata.has_key('error'):

@@ -109,13 +109,19 @@ class Service(object):
         self.tested = True
 
         # first shrink an url
-        turl = self.shrink('http://test.com')
+        try:
+            turl = self.shrink('http://test.com')
+        except ShortyError, e:
+            raise ShortyError('@shrink ' + e.reason)
 
         # second expand url and verify
-        if self.expand(turl) == 'http://test.com':
-            return True
-        else:
-            return False
+        try:
+            if self.expand(turl) == 'http://test.com':
+                return True
+            else:
+                return False
+        except ShortyError, e:
+            raise ShortyError('@expand ' + e.reason)
 
     def shrink(self, bigurl):
         """Take a big url and make it smaller"""
@@ -177,7 +183,7 @@ class Urlborg(Service):
         if not self.apikey:
             return get_redirect(get_redirect(tinyurl))
         turl = urlparse(tinyurl)
-        url = 'http://urlborg.com/api/%s/url/info.json%s' % (self.apikey, turl.path)
+        url = 'http://urlborg.com/api/%s/url/info.json%s' % (self.apikey, turl[2])
         resp = request(url)
         jdata = json.loads(resp.read())
         if jdata.has_key('error'):
@@ -387,9 +393,9 @@ class Trim(Service):
 
     def expand(self, tinyurl):
         turl = urlparse(tinyurl)
-        if turl.netloc != 'tr.im' and turl.netloc != 'www.tr.im':
+        if turl[1].lstrip('www.') != 'tr.im':
             raise ShortyError('Not a valid tr.im url')
-        parameters = {'trimpath': turl.path.strip('/')}
+        parameters = {'trimpath': turl[2].strip('/')}
         if self.apikey:
             parameters['api_key'] = self.apikey
         resp = request('http://api.tr.im/api/trim_destination.json', parameters)
@@ -435,6 +441,7 @@ class Digg(Service):
         Service._test(self)
 
     def shrink(self, bigurl):
+        # FIXME: python 2.4 runs into a 403 error for some reason
         if not self.appkey:
             raise ShortyError('Must set an appkey')
         resp = request('http://services.digg.com/url/short/create',
@@ -447,10 +454,10 @@ class Digg(Service):
     def expand(self, tinyurl):
         if self.appkey:
             turl = urlparse(tinyurl)
-            if turl.netloc != 'digg.com' and turl.netloc != 'www.digg.com':
+            if turl[1].lstrip('www.') != 'digg.com':
                 raise ShortyError('Not a valid digg url')
             resp = request('http://services.digg.com/url/short/%s' % quote(
-                            turl.path.strip('/')),
+                            turl[2].strip('/')),
                             {'appkey': self.appkey, 'type': 'json'})
             jdata = json.loads(resp.read())['shorturls'][0]
             self.itemid = jdata['itemid']
@@ -479,9 +486,9 @@ class Chilpit(Service):
 
         # needs fixing
         """turl = urlparse(tinyurl)
-        if turl.netloc.lstrip('www.') != 'chilp.it':
+        if turl[1].lstrip('www.') != 'chilp.it':
             raise ShortyError('Not a chilp.it url')
-        resp = request('http://p.chilp.it/api.php?' + turl.query)
+        resp = request('http://p.chilp.it/api.php?' + turl[4])
         url = resp.read()
         if url.startswith('http://'):
             return url.strip('\n\r')
@@ -491,9 +498,9 @@ class Chilpit(Service):
     # get click stats of the tinyurl
     def stats(self, tinyurl):
         turl = urlparse(tinyurl)
-        if turl.netloc.lstrip('www.') != 'chilp.it':
+        if turl[1].lstrip('www.') != 'chilp.it':
             raise ShortyError('Not a chilp.it url')
-        resp = request('http://s.chilp.it/api.php?' + turl.query)
+        resp = request('http://s.chilp.it/api.php?' + turl[4])
         hit_count = resp.read()
         try:
             return int(hit_count)
@@ -530,9 +537,9 @@ class Sandbox(Service):
     def expand(self, tinyurl):
         # lookup big url and return
         turl = urlparse(tinyurl)
-        if turl.netloc != 'sandbox.com':
+        if turl[1] != 'sandbox.com':
             raise ShortyError('Not a sandbox url')
-        return self.urls.get(turl.path.strip('/'))
+        return self.urls.get(turl[2].strip('/'))
 
 sandbox = Sandbox()
 

@@ -31,7 +31,7 @@ class Sandbox(Service):
     def expand(self, tinyurl):
         # lookup big url and return
         turl = urlparse(tinyurl)
-        if turl.netloc != 'sandbox.com':
+        if turl[1] != 'sandbox.com':
             raise ShortyError('Not a sandbox url')
-        return self.urls.get(turl.path.strip('/'))
+        return self.urls.get(turl[2].strip('/'))
 
