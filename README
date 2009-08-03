@@ -35,6 +35,7 @@ Supported URL shortening services for shrinking long urls:
     to.ly
     budurl.com
     kl.am
+    xr.com
 
 Shorty can expand any url service by getting the redirect
 location by requesting the tiny url.

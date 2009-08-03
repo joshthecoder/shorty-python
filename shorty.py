@@ -522,6 +522,31 @@ class Agd(Service):
 
 agd = Agd()
 
+# xr
+class Xr(Service):
+
+    def __init__(self, account_name=None):
+        self.account_name = account_name
+
+    def shrink(self, bigurl, custom=None, domain=None, direct=True):
+        parameters = {'link': bigurl}
+        if custom:
+            parameters['custom'] = custom
+        if domain:
+            parameters['domain'] = domain
+        if direct:
+            parameters['direct'] = 'yes'
+        if self.account_name:
+            parameters['pid'] = self.account_name
+        resp = request('http://api.xr.com/api', parameters)
+        url = resp.read()
+        if url.startswith('http'):
+            return url
+        else:
+            raise ShortyError(url)
+
+xr = Xr()
+
 # shortto
 class Shortto(Service):
 
@@ -684,26 +709,28 @@ class Bukme(Service):
 bukme = Bukme()
 
 services = {
-    'a.gd': agd,
+    'chilp.it': chilpit,
+    'bit.ly': bitly,
     'short.to': shortto,
-    'budurl.com': budurl,
+    'tr.im': trim,
+    'twurl.nl': tweetburner,
+    'buk.me': bukme,
+    'fon.gs': fongs,
+    'to.ly': toly,
+    'fwd4.me': fwd4me,
+    'xr.com': xr,
+    'short.ie': shortie,
+    'sandbox.com': sandbox,
+    'a.gd': agd,
     'digg.com': digg,
     'kl.am': klam,
     'tweetburner.com': tweetburner,
-    'tr.im': trim,
-    'twurl.nl': tweetburner,
-    'to.ly': toly,
+    'budurl.com': budurl,
     'cli.gs': cligs,
     'urlborg.com': urlborg,
     'is.gd': isgd,
-    'fon.gs': fongs,
-    'chilp.it': chilpit,
     'ub0.cc': urlborg,
+    'x.bb': xr,
     'tinyurl.com': tinyurl,
-    'bit.ly': bitly,
-    'fwd4.me': fwd4me,
-    'short.ie': shortie,
-    'sandbox.com': sandbox,
-    'buk.me': bukme,
 }
 
