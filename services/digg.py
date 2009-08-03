@@ -10,6 +10,10 @@ class Digg(Service):
         self.itemid = None
         self.view_count = None
 
+    def _test(self):
+        self.appkey = 'http://gitorious.org/shorty'
+        Service._test(self)
+
     def shrink(self, bigurl):
         if not self.appkey:
             raise ShortyError('Must set an appkey')

@@ -8,6 +8,11 @@ class Urlborg(Service):
     def __init__(self, apikey=None):
         self.apikey = apikey
 
+    def _test(self):
+        # prompt tester for apikey
+        self.apikey = raw_input('urlborg apikey: ').strip()
+        Service._test(self)
+
     def shrink(self, bigurl):
         if not self.apikey:
             raise ShortyError('Must set an apikey')

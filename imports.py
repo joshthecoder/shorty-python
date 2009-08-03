@@ -8,6 +8,7 @@ from urllib import urlencode, quote
 from urlparse import urlparse
 from random import randint
 import base64
+from getpass import getpass
 
 try:
     import json

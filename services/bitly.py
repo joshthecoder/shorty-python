@@ -12,6 +12,19 @@ class Bitly(Service):
         self.apikey = apikey
         self.password = password
 
+    def _test(self):
+        # prompt for login
+        self.login = raw_input('bitly login: ')
+        
+        # ask if tester wants to provide apikey or password
+        print 'auth with password(P) or apikey(K)?'
+        if raw_input() == 'P':
+            self.password = getpass('bitly password: ')
+        else:
+            self.apikey = raw_input('bitly apikey: ')
+
+        Service._test(self)
+
     def _setup(self):
         parameters = {'version': self.version}
         if self.apikey:

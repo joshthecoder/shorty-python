@@ -42,6 +42,7 @@ from urllib import urlencode, quote
 from urlparse import urlparse
 from random import randint
 import base64
+from getpass import getpass
 
 try:
     import json
@@ -156,6 +157,11 @@ class Urlborg(Service):
 
     def __init__(self, apikey=None):
         self.apikey = apikey
+
+    def _test(self):
+        # prompt tester for apikey
+        self.apikey = raw_input('urlborg apikey: ').strip()
+        Service._test(self)
 
     def shrink(self, bigurl):
         if not self.apikey:
@@ -296,6 +302,19 @@ class Bitly(Service):
         self.apikey = apikey
         self.password = password
 
+    def _test(self):
+        # prompt for login
+        self.login = raw_input('bitly login: ')
+        
+        # ask if tester wants to provide apikey or password
+        print 'auth with password(P) or apikey(K)?'
+        if raw_input() == 'P':
+            self.password = getpass('bitly password: ')
+        else:
+            self.apikey = raw_input('bitly apikey: ')
+
+        Service._test(self)
+
     def _setup(self):
         parameters = {'version': self.version}
         if self.apikey:
@@ -410,6 +429,10 @@ class Digg(Service):
         self.appkey = appkey
         self.itemid = None
         self.view_count = None
+
+    def _test(self):
+        self.appkey = 'http://gitorious.org/shorty'
+        Service._test(self)
 
     def shrink(self, bigurl):
         if not self.appkey:
