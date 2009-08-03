@@ -286,6 +286,14 @@ class Cligs(Service):
 
 cligs = Cligs()
 
+# toly
+class Toly(Service):
+
+    def shrink(self, bigurl):
+        resp = request('http://to.ly/api.php', {'longurl': bigurl})
+        return resp.read()
+toly = Toly()
+
 # fongs
 class Fongs(Service):
 
@@ -471,11 +479,7 @@ class Shortto(Service):
 
     def expand(self, tinyurl):
         resp = request('http://long.to/do.txt', {'url': tinyurl})
-        url = resp.read()
-        if url.startswith('http'):
-            return url
-        else:
-            raise ShortyError(url)
+        return resp.read()
 
 shortto = Shortto()
 
@@ -633,9 +637,9 @@ services = {
     'chilp.it': chilpit,
     'digg.com': digg,
     'tweetburner.com': tweetburner,
-    'buk.me': bukme,
-    'twurl.nl': tweetburner,
     'tr.im': trim,
+    'twurl.nl': tweetburner,
+    'to.ly': toly,
     'cli.gs': cligs,
     'urlborg.com': urlborg,
     'is.gd': isgd,
@@ -646,5 +650,6 @@ services = {
     'fwd4.me': fwd4me,
     'short.ie': shortie,
     'sandbox.com': sandbox,
+    'buk.me': bukme,
 }
 
