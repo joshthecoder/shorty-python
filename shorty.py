@@ -347,6 +347,28 @@ class Fongs(Service):
 
 fongs = Fongs()
 
+# burnurl
+class Burnurl(Service):
+
+    def _test(self):
+        # all we can test is shrink
+        turl = self.shrink('http://test.com')
+        if turl.startswith('http://burnurl.com'):
+            return True
+        else:
+            return False
+
+    def shrink(self, bigurl):
+        resp = request('http://burnurl.com/', {'url': bigurl, 'output': 'plain'})
+        return resp.read()
+
+    def expand(self, tinyurl):
+        # burnurl uses iframes for displaying original url
+        # so we cannot expand them using the 301 redirect :(
+        return None
+
+burnurl = Burnurl()
+
 # tweetburner
 class Tweetburner(Service):
 
@@ -736,6 +758,7 @@ services = {
     'xr.com': xr,
     'short.ie': shortie,
     'sandbox.com': sandbox,
+    'burnurl.com': burnurl,
     'a.gd': agd,
     'hurl.ws': hurlws,
     'digg.com': digg,

@@ -16,10 +16,10 @@ Requirements:
     Simplejson (not required in python 2.6+)
 
 Supported URL shortening services for shrinking long urls:
-    sandbox (stored locally in memory for testing)
-    tinyurl.com
-    tr.im
-    urlborg.com
+
+    tinyurl.com                 burnurl.com
+    tr.im                       hurl.ws
+    urlborg.com                 xr.com
     bit.ly
     is.gd
     cli.gs
@@ -35,11 +35,13 @@ Supported URL shortening services for shrinking long urls:
     to.ly
     budurl.com
     kl.am
-    xr.com
-    hurl.ws
 
 Shorty can expand any url service by getting the redirect
 location by requesting the tiny url.
+
+Shorty also comes with a service called sandbox. This service stores
+the urls in memory and is useful for testing your application
+independently from a remote service.
 
 See example.py for a demo of using this library.
 
