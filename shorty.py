@@ -347,6 +347,19 @@ class Fongs(Service):
 
 fongs = Fongs()
 
+# hexio
+class Hexio(Service):
+
+    def shrink(self, bigurl):
+        resp = request('http://hex.io/api-create.php', {'url': bigurl})
+        url = resp.read()
+        if url.startswith('http'):
+            return url
+        else:
+            raise ShortyError('Failed to shrink url')
+
+hexio = Hexio()
+
 # burnurl
 class Burnurl(Service):
 
@@ -813,6 +826,7 @@ services = {
     'digg.com': digg,
     'kl.am': klam,
     'to.ly': toly,
+    'hex.io': hexio,
     'budurl.com': budurl,
     'cli.gs': cligs,
     'urlborg.com': urlborg,
