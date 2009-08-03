@@ -286,6 +286,21 @@ class Cligs(Service):
 
 cligs = Cligs()
 
+# hurlws
+class Hurlws(Service):
+
+    def __init__(self, username=None):
+        self.username = username
+
+    def shrink(self, bigurl):
+        parameters = {'url': bigurl}
+        if self.username:
+            parameters['user'] = self.username
+        resp = request('http://www.hurl.ws/api/', post_data=urlencode(parameters))
+        return resp.read()
+
+hurlws = Hurlws()
+
 # toly
 class Toly(Service):
 
@@ -716,20 +731,21 @@ services = {
     'twurl.nl': tweetburner,
     'buk.me': bukme,
     'fon.gs': fongs,
-    'to.ly': toly,
+    'ub0.cc': urlborg,
     'fwd4.me': fwd4me,
     'xr.com': xr,
     'short.ie': shortie,
     'sandbox.com': sandbox,
     'a.gd': agd,
+    'hurl.ws': hurlws,
     'digg.com': digg,
     'kl.am': klam,
-    'tweetburner.com': tweetburner,
+    'to.ly': toly,
     'budurl.com': budurl,
     'cli.gs': cligs,
     'urlborg.com': urlborg,
     'is.gd': isgd,
-    'ub0.cc': urlborg,
+    'tweetburner.com': tweetburner,
     'x.bb': xr,
     'tinyurl.com': tinyurl,
 }
