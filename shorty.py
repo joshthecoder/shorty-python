@@ -13,9 +13,10 @@ Python 2.4+
 Versions before 2.6 require simplejson.
 
 http://gitorious.org/shorty
+shorty-python@googlegroups.com
 
 MIT License
-Copyright (c) 2009 Joshua Roesslein <jroesslein at gmail.com>
+Copyright (c) 2009 Joshua Roesslein
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
