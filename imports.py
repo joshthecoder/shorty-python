@@ -9,6 +9,7 @@ from urlparse import urlparse
 from random import randint
 import base64
 from getpass import getpass
+import re
 
 try:
     import json
