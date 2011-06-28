@@ -72,6 +72,8 @@ class Service(object):
         try:
             if self.expand(turl) == 'http://test.com':
                 return True
+            elif self.expand(turl) == 'http://test.com/':
+                return True
             else:
                 return False
         except ShortyError, e:
