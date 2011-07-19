@@ -8,14 +8,6 @@
 
 Access many URL shortening services from one library.
 
-Language: Python
-Website: http://gitorious.org/shorty
-Mailinglist: shorty-python at googlegroups.com
-Repository: git://gitorious.org/shorty/python.git
-Requirements:
-    Python 2.4+
-    Simplejson (not required in python 2.6+)
-
 Supported URL shortening services for shrinking long urls:
 
     tinyurl.com                 burnurl.com
