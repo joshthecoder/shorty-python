@@ -162,6 +162,162 @@ def expand(tinyurl):
         return get_redirect(tinyurl)
     return s.expand(tinyurl)
 
+# ur1ca
+class Ur1ca(Service):
+
+    def shrink(self, bigurl):
+        resp = request('http://ur1.ca/',
+            post_data = urlencode({'longurl': bigurl, 'submit' : 'Make it an ur1!'}))
+        returned_data = resp.read()
+        matched_re = re.search('Your ur1 is: <a href="(http://ur1.ca/[^"]+)">\\1', returned_data)
+        if matched_re:
+            return matched_re.group(1)
+        else:
+            raise ShortyError('Failed to shrink url')
+
+ur1ca = Ur1ca()
+
+# fongs
+class Fongs(Service):
+
+    def shrink(self, bigurl, tag=None):
+        parameters = {'url': bigurl}
+        if tag:
+            parameters['linkname'] = tag
+        resp = request('http://fon.gs/create.php', parameters)
+        data = resp.read()
+        if data.startswith('OK:'):
+            return data.lstrip('OK: ')
+        elif data.startswith('MODIFIED:'):
+            return data.lstrip('MODIFIED: ')
+        else:
+            raise ShortyError(data)
+
+    # check if the given tag is taken
+    # returns true if available false if taken
+    def check(self, tag):
+        resp = request('http://fon.gs/check.php', {'linkname': tag})
+        data = resp.read()
+        if data.startswith('AVAILABLE'):
+            return True
+        elif data.startswith('TAKEN'):
+            return False
+        else:
+            raise ShortyError(data)
+
+    def expand(self, tinyurl):
+        if tinyurl[-1] != '/':
+            turl = tinyurl + '/'
+        else:
+            turl = tinyurl
+        return Service.expand(self, turl)
+
+fongs = Fongs()
+
+# xr
+class Xr(Service):
+
+    def __init__(self, account_name=None):
+        self.account_name = account_name
+
+    def shrink(self, bigurl, custom=None, domain=None, direct=True):
+        parameters = {'link': bigurl}
+        if custom:
+            parameters['custom'] = custom
+        if domain:
+            parameters['domain'] = domain
+        if direct:
+            parameters['direct'] = 'yes'
+        if self.account_name:
+            parameters['pid'] = self.account_name
+        resp = request('http://api.xr.com/api', parameters)
+        url = resp.read()
+        if url.startswith('http'):
+            return url
+        else:
+            raise ShortyError(url)
+
+xr = Xr()
+
+# toly
+class Toly(Service):
+
+    def shrink(self, bigurl):
+        resp = request('http://to.ly/api.php', {'longurl': bigurl})
+        return resp.read()
+
+toly = Toly()
+
+# burnurl
+class Burnurl(Service):
+
+    def _test(self):
+        # all we can test is shrink
+        turl = self.shrink('http://test.com')
+        if turl.startswith('http://burnurl.com'):
+            return True
+        else:
+            return False
+
+    def shrink(self, bigurl):
+        resp = request('http://burnurl.com/', {'url': bigurl, 'output': 'plain'})
+        return resp.read()
+
+    def expand(self, tinyurl):
+        # burnurl uses iframes for displaying original url
+        # so we cannot expand them using the 301 redirect :(
+        return None
+
+burnurl = Burnurl()
+
+# isgd
+class Isgd(Service):
+
+    def shrink(self, bigurl):
+        resp = request('http://is.gd/api.php', {'longurl': bigurl})
+        turl = resp.read()
+        if turl.startswith('Error:'):
+            raise ShortyError(turl)
+        return turl
+
+isgd = Isgd()
+
+# tweetburner
+class Tweetburner(Service):
+
+    def shrink(self, bigurl):
+        resp = request('http://tweetburner.com/links', post_data='link[url]=%s' % bigurl)
+        return resp.read()
+
+tweetburner = Tweetburner()
+
+# hexio
+class Hexio(Service):
+
+    def shrink(self, bigurl):
+        resp = request('http://hex.io/api-create.php', {'url': bigurl})
+        url = resp.read()
+        if url.startswith('http'):
+            return url
+        else:
+            raise ShortyError('Failed to shrink url')
+
+hexio = Hexio()
+
+# google
+class Google(Service):
+
+    def shrink(self, bigurl):
+        resp = request('http://goo.gl/api/url', {'url': bigurl}, post_data = 'toolbar')
+        data = resp.read()
+        jdata = json.loads(data)
+        if 'short_url' not in jdata:
+            raise ShortyError(data)
+        else:
+            return jdata['short_url']
+
+google = Google()
+
 # agd
 class Agd(Service):
 
@@ -182,6 +338,64 @@ class Agd(Service):
             raise ShortyError(url[url.find('>')+1:url.rfind('<')])
 
 agd = Agd()
+
+# chilpit
+class Chilpit(Service):
+
+    def shrink(self, bigurl):
+        resp = request('http://chilp.it/api.php', {'url': bigurl})
+        url = resp.read()
+        if url.startswith('http://'):
+            return url.strip()
+        else:
+            raise ShortyError(url)
+
+    def expand(self, tinyurl):
+        turl = urlparse(tinyurl)
+        if turl[1].lstrip('www.') != 'chilp.it':
+            raise ShortyError('Not a chilp.it url')
+        resp = request('http://p.chilp.it/api.php?' + turl[2][1:])
+        url = resp.read()
+        if url.startswith('http://'):
+            return url.strip('\n\r')
+        else:
+            raise ShortyError(url)
+
+    # get click stats of the tinyurl
+    def stats(self, tinyurl):
+        turl = urlparse(tinyurl)
+        if turl[1].lstrip('www.') != 'chilp.it':
+            raise ShortyError('Not a chilp.it url')
+        resp = request('http://s.chilp.it/api.php?' + turl[2][1:])
+        hit_count = resp.read()
+        try:
+            return int(hit_count)
+        except:
+            raise ShortyError('Url not found or invalid')
+
+chilpit = Chilpit()
+
+# fwd4me
+class Fwd4me(Service):
+
+    ecodes = {
+        '1': 'Invalid long url',
+        '2': 'Invalid api key',
+        '3': 'Account suspended or revoked',
+        '4': 'Long url is black listed',
+        '5': 'Internal system error'
+    }
+
+    def shrink(self, bigurl):
+        resp = request('http://api.fwd4.me/', {'url': bigurl})
+        data = resp.read()
+        if data.startswith('ERROR:'):
+            ecode = data.lstrip('ERROR:')
+            raise ShortyError(Fwd4me.ecodes.get(ecode, 'Unkown error'))
+        else:
+            return data
+
+fwd4me = Fwd4me()
 
 # bitly
 class Bitly(Service):
@@ -242,150 +456,68 @@ class Bitly(Service):
 
 bitly = Bitly()
 
-# budurl
-class Budurl(Service):
+# trim
+class Trim(Service):
 
-    def __init__(self, apikey=None):
+    def __init__(self, apikey=None, username_pass=None):
         self.apikey = apikey
+        self.username_pass = username_pass
 
-    def _test(self):
-        #prompt for apikey
-        self.apikey = raw_input('budurl apikey: ')
-        Service._test(self)
-
-    def shrink(self, bigurl, notes=None):
-        if self.apikey is None:
-            raise ShortyError('Must set an apikey')
-        parameters = {'long_url': bigurl, 'api_key': self.apikey}
-        if notes:
-            parameters['notes'] = notes
-        resp = request('http://budurl.com/api/v1/budurls/shrink', parameters)
-        jdata = json.loads(resp.read())
-        if jdata['success'] != 1:
-            raise ShortyError(jdata['error_message'])
-        else:
-            return str(jdata['budurl'])
-
-    def expand(self, tinyurl):
-        resp = request('http://budurl.com/api/v1/budurls/expand', {'budurl': tinyurl})
-        jdata = json.loads(resp.read())
-        if jdata['success'] != 1:
-            raise ShortyError(jdata['error_message'])
-        else:
-            return str(jdata['long_url'])
-
-budurl = Budurl()
-
-# bukme
-class Bukme(Service):
-
-    def _process(self, resp):
-        # bukme returns some markup after the url, so chop it off
-        url = resp[:resp.find('<')]
-        if url.startswith('http://'):
-            return url
-        else:
-            raise ShortyError(url)
-
-    def shrink(self, bigurl, tag=None):
-        parameters = {'url': bigurl}
-        if tag:
-            parameters['buk'] = tag
-        resp = request('http://buk.me/api.php', parameters)
-        return self._process(resp.read())
-
-    def expand(self, tinyurl):
-        resp = request('http://buk.me/api.php', {'rev': tinyurl})
-        return self._process(resp.read())
-
-bukme = Bukme()
-
-# burnurl
-class Burnurl(Service):
-
-    def _test(self):
-        # all we can test is shrink
-        turl = self.shrink('http://test.com')
-        if turl.startswith('http://burnurl.com'):
-            return True
-        else:
-            return False
-
-    def shrink(self, bigurl):
-        resp = request('http://burnurl.com/', {'url': bigurl, 'output': 'plain'})
-        return resp.read()
-
-    def expand(self, tinyurl):
-        # burnurl uses iframes for displaying original url
-        # so we cannot expand them using the 301 redirect :(
-        return None
-
-burnurl = Burnurl()
-
-# chilpit
-class Chilpit(Service):
-
-    def shrink(self, bigurl):
-        resp = request('http://chilp.it/api.php', {'url': bigurl})
-        url = resp.read()
-        if url.startswith('http://'):
-            return url.strip()
-        else:
-            raise ShortyError(url)
-
-    def expand(self, tinyurl):
-        Service.expand(self, tinyurl)
-
-        # needs fixing
-        """turl = urlparse(tinyurl)
-        if turl[1].lstrip('www.') != 'chilp.it':
-            raise ShortyError('Not a chilp.it url')
-        resp = request('http://p.chilp.it/api.php?' + turl[4])
-        url = resp.read()
-        if url.startswith('http://'):
-            return url.strip('\n\r')
-        else:
-            raise ShortyError(url)"""
-
-    # get click stats of the tinyurl
-    def stats(self, tinyurl):
-        turl = urlparse(tinyurl)
-        if turl[1].lstrip('www.') != 'chilp.it':
-            raise ShortyError('Not a chilp.it url')
-        resp = request('http://s.chilp.it/api.php?' + turl[4])
-        hit_count = resp.read()
-        try:
-            return int(hit_count)
-        except:
-            raise ShortyError('Url not found or invalid')
-
-chilpit = Chilpit()
-
-# cligs
-class Cligs(Service):
-
-    def __init__(self, apikey=None, appid=None):
-        self.apikey = apikey
-        self.appid = appid
-
-    def shrink(self, bigurl, title=None):
-        parameters = {'url': bigurl}
-        if title:
-            parameters['title'] = title
+    def shrink(self, bigurl, custom=None, searchtags=None, privacycode=None,
+                newtrim=False, sandbox=False):
+        parameters = {}
+        parameters['url'] = bigurl
+        if custom:
+            parameters['custom'] = custom
+        if searchtags:
+            parameters['searchtags'] = searchtags
+        if privacycode:
+            parameters['privacycode'] = privacycode
+        if newtrim:
+            parameters['newtrim'] = '1'
+        if sandbox:
+            parameters['sandbox'] = '1'
         if self.apikey:
-            parameters['key'] = self.apikey
-        if self.appid:
-            parameters['appid'] = self.appid
-        resp = request('http://cli.gs/api/v1/cligs/create', parameters)
+            parameters['api_key'] = self.apikey
+        resp = request('http://api.tr.im/api/trim_url.json', parameters, self.username_pass)
+        jdata = json.loads(resp.read())
+        self.status = (int(jdata['status']['code']), str(jdata['status']['message']))
+        if not 200 <= self.status[0] < 300:
+            raise ShortyError(self.status[1])
+        self.trimpath = str(jdata['trimpath'])
+        self.reference = str(jdata['reference'])
+        self.destination = str(jdata['destination'])
+        self.domain = str(jdata['domain'])
+        return str(jdata['url'])
+
+    def expand(self, tinyurl):
+        turl = urlparse(tinyurl)
+        if turl[1].lstrip('www.') != 'tr.im':
+            raise ShortyError('Not a valid tr.im url')
+        parameters = {'trimpath': turl[2].strip('/')}
+        if self.apikey:
+            parameters['api_key'] = self.apikey
+        resp = request('http://api.tr.im/api/trim_destination.json', parameters)
+        jdata = json.loads(resp.read())
+        self.status = (int(jdata['status']['code']), str(jdata['status']['message']))
+        if not 200 <= self.status[0] < 300:
+            raise ShortyError(self.status[1])
+        return str(jdata['destination'])
+
+trim = Trim()
+
+# shortto
+class Shortto(Service):
+
+    def shrink(self, bigurl):
+        resp = request('http://short.to/s.txt', {'url': bigurl})
         return resp.read()
 
     def expand(self, tinyurl):
-        # TODO: debug this some more, not working properly
-        '''resp = request('http://cli.gs/api/v1/cligs/expand', {'clig': tinyurl})
-        return resp.read()'''
-        return get_redirect(tinyurl)
+        resp = request('http://long.to/do.txt', {'url': tinyurl})
+        return resp.read()
 
-cligs = Cligs()
+shortto = Shortto()
 
 # digg
 class Digg(Service):
@@ -429,118 +561,146 @@ class Digg(Service):
 
 digg = Digg()
 
-# fongs
-class Fongs(Service):
+# cligs
+class Cligs(Service):
 
-    def shrink(self, bigurl, tag=None):
+    def __init__(self, apikey=None, appid=None):
+        self.apikey = apikey
+        self.appid = appid
+
+    def shrink(self, bigurl, title=None):
         parameters = {'url': bigurl}
-        if tag:
-            parameters['linkname'] = tag
-        resp = request('http://fon.gs/create.php', parameters)
-        data = resp.read()
-        if data.startswith('OK:'):
-            return data.lstrip('OK: ')
-        elif data.startswith('MODIFIED:'):
-            return data.lstrip('MODIFIED: ')
-        else:
-            raise ShortyError(data)
-
-    # check if the given tag is taken
-    # returns true if available false if taken
-    def check(self, tag):
-        resp = request('http://fon.gs/check.php', {'linkname': tag})
-        data = resp.read()
-        if data.startswith('AVAILABLE'):
-            return True
-        elif data.startswith('TAKEN'):
-            return False
-        else:
-            raise ShortyError(data)
+        if title:
+            parameters['title'] = title
+        if self.apikey:
+            parameters['key'] = self.apikey
+        if self.appid:
+            parameters['appid'] = self.appid
+        resp = request('http://cli.gs/api/v1/cligs/create', parameters)
+        return resp.read()
 
     def expand(self, tinyurl):
-        if tinyurl[-1] != '/':
-            turl = tinyurl + '/'
-        else:
-            turl = tinyurl
-        return Service.expand(self, turl)
+        # TODO: debug this some more, not working properly
+        '''resp = request('http://cli.gs/api/v1/cligs/expand', {'clig': tinyurl})
+        return resp.read()'''
+        return get_redirect(tinyurl)
 
-fongs = Fongs()
+cligs = Cligs()
 
-# fwd4me
-class Fwd4me(Service):
+# snipurl
+class Snipurl(Service):
 
-    ecodes = {
-        '1': 'Invalid long url',
-        '2': 'Invalid api key',
-        '3': 'Account suspended or revoked',
-        '4': 'Long url is black listed',
-        '5': 'Internal system error'
-    }
+    def __init__(self, user=None, apikey=None):
+        self.user = user
+        self.apikey = apikey
 
-    def shrink(self, bigurl):
-        resp = request('http://api.fwd4.me/', {'url': bigurl})
-        data = resp.read()
-        if data.startswith('ERROR:'):
-            ecode = data.lstrip('ERROR:')
-            raise ShortyError(Fwd4me.ecodes.get(ecode, 'Unkown error'))
-        else:
-            return data
+    def _test(self):
+        # prompt for username and apikey
+        self.user = raw_input('snipurl username: ')
+        self.apikey = raw_input('snipurl apikey: ')
+        Service._test(self)
 
-fwd4me = Fwd4me()
+    def shrink(self, bigurl, custom=None, title=None, private_key=None,
+                owner=None, include_private_key=False):
+        if self.user is None or self.apikey is None:
+            raise ShortyError('Must set an user and apikey')
+        parameters = {
+            'sniplink': bigurl,
+            'snipuser': self.user,
+            'snipapi': self.apikey,
+            'snipformat': 'simple' 
+        }
+        if custom:
+            parameters['snipnick'] = custom
+        if title:
+            parameters['sniptitle'] = title
+        if private_key:
+            parameters['snippk'] = private_key
+        if owner:
+            parameters['snipowner'] = owner
+        if include_private_key:
+            parameters['snipformat_includepk'] = 'Y'
+        resp = request('http://snipurl.com/site/getsnip',
+                        post_data=urlencode(parameters))
+        return resp.read()
 
-# google
-class Google(Service):
-
-    def shrink(self, bigurl):
-        resp = request('http://goo.gl/api/url', {'url': bigurl}, post_data = 'toolbar')
-        data = resp.read()
-        jdata = json.loads(data)
-        if 'short_url' not in jdata:
-            raise ShortyError(data)
-        else:
-            return jdata['short_url']
-
-google = Google()
-
-# hexio
-class Hexio(Service):
-
-    def shrink(self, bigurl):
-        resp = request('http://hex.io/api-create.php', {'url': bigurl})
-        url = resp.read()
+    def expand(self, tinyurl):
+        # TODO: fetch detailed info
+        url = Service.expand(self, tinyurl)
         if url.startswith('http'):
             return url
         else:
-            raise ShortyError('Failed to shrink url')
+            raise ShortyError('Invalid url')
 
-hexio = Hexio()
+snipurl = Snipurl()
 
-# hurlws
-class Hurlws(Service):
+# budurl
+class Budurl(Service):
 
-    def __init__(self, username=None):
-        self.username = username
+    def __init__(self, apikey=None):
+        self.apikey = apikey
+
+    def _test(self):
+        #prompt for apikey
+        self.apikey = raw_input('budurl apikey: ')
+        Service._test(self)
+
+    def shrink(self, bigurl, notes=None):
+        if self.apikey is None:
+            raise ShortyError('Must set an apikey')
+        parameters = {'long_url': bigurl, 'api_key': self.apikey}
+        if notes:
+            parameters['notes'] = notes
+        resp = request('http://budurl.com/api/v1/budurls/shrink', parameters)
+        jdata = json.loads(resp.read())
+        if jdata['success'] != 1:
+            raise ShortyError(jdata['error_message'])
+        else:
+            return str(jdata['budurl'])
+
+    def expand(self, tinyurl):
+        resp = request('http://budurl.com/api/v1/budurls/expand', {'budurl': tinyurl})
+        jdata = json.loads(resp.read())
+        if jdata['success'] != 1:
+            raise ShortyError(jdata['error_message'])
+        else:
+            return str(jdata['long_url'])
+
+budurl = Budurl()
+
+# urlborg
+class Urlborg(Service):
+
+    def __init__(self, apikey=None):
+        self.apikey = apikey
+
+    def _test(self):
+        # prompt tester for apikey
+        self.apikey = raw_input('urlborg apikey: ').strip()
+        Service._test(self)
 
     def shrink(self, bigurl):
-        parameters = {'url': bigurl}
-        if self.username:
-            parameters['user'] = self.username
-        resp = request('http://www.hurl.ws/api/', post_data=urlencode(parameters))
-        return resp.read()
-
-hurlws = Hurlws()
-
-# isgd
-class Isgd(Service):
-
-    def shrink(self, bigurl):
-        resp = request('http://is.gd/api.php', {'longurl': bigurl})
+        if not self.apikey:
+            raise ShortyError('Must set an apikey')
+        url = 'http://urlborg.com/api/%s/create/%s' % (self.apikey, quote(bigurl))
+        resp = request(url)
         turl = resp.read()
-        if turl.startswith('Error:'):
+        if not turl.startswith('http://'):
             raise ShortyError(turl)
         return turl
 
-isgd = Isgd()
+    def expand(self, tinyurl):
+        if not self.apikey:
+            return get_redirect(get_redirect(tinyurl))
+        turl = urlparse(tinyurl)
+        url = 'http://urlborg.com/api/%s/url/info.json%s' % (self.apikey, turl[2])
+        resp = request(url)
+        jdata = json.loads(resp.read())
+        if jdata.has_key('error'):
+            raise ShortyError('Invalid tiny url or apikey')
+        return str(jdata['o_url'])
+
+urlborg = Urlborg()
 
 # klam
 class Klam(Service):
@@ -627,65 +787,44 @@ class Shortie(Service):
 
 shortie = Shortie()
 
-# shortto
-class Shortto(Service):
+# bukme
+class Bukme(Service):
 
-    def shrink(self, bigurl):
-        resp = request('http://short.to/s.txt', {'url': bigurl})
-        return resp.read()
-
-    def expand(self, tinyurl):
-        resp = request('http://long.to/do.txt', {'url': tinyurl})
-        return resp.read()
-
-shortto = Shortto()
-
-# snipurl
-class Snipurl(Service):
-
-    def __init__(self, user=None, apikey=None):
-        self.user = user
-        self.apikey = apikey
-
-    def _test(self):
-        # prompt for username and apikey
-        self.user = raw_input('snipurl username: ')
-        self.apikey = raw_input('snipurl apikey: ')
-        Service._test(self)
-
-    def shrink(self, bigurl, custom=None, title=None, private_key=None,
-                owner=None, include_private_key=False):
-        if self.user is None or self.apikey is None:
-            raise ShortyError('Must set an user and apikey')
-        parameters = {
-            'sniplink': bigurl,
-            'snipuser': self.user,
-            'snipapi': self.apikey,
-            'snipformat': 'simple' 
-        }
-        if custom:
-            parameters['snipnick'] = custom
-        if title:
-            parameters['sniptitle'] = title
-        if private_key:
-            parameters['snippk'] = private_key
-        if owner:
-            parameters['snipowner'] = owner
-        if include_private_key:
-            parameters['snipformat_includepk'] = 'Y'
-        resp = request('http://snipurl.com/site/getsnip',
-                        post_data=urlencode(parameters))
-        return resp.read()
-
-    def expand(self, tinyurl):
-        # TODO: fetch detailed info
-        url = Service.expand(self, tinyurl)
-        if url.startswith('http'):
+    def _process(self, resp):
+        # bukme returns some markup after the url, so chop it off
+        url = resp[:resp.find('<')]
+        if url.startswith('http://'):
             return url
         else:
-            raise ShortyError('Invalid url')
+            raise ShortyError(url)
 
-snipurl = Snipurl()
+    def shrink(self, bigurl, tag=None):
+        parameters = {'url': bigurl}
+        if tag:
+            parameters['buk'] = tag
+        resp = request('http://buk.me/api.php', parameters)
+        return self._process(resp.read())
+
+    def expand(self, tinyurl):
+        resp = request('http://buk.me/api.php', {'rev': tinyurl})
+        return self._process(resp.read())
+
+bukme = Bukme()
+
+# hurlws
+class Hurlws(Service):
+
+    def __init__(self, username=None):
+        self.username = username
+
+    def shrink(self, bigurl):
+        parameters = {'url': bigurl}
+        if self.username:
+            parameters['user'] = self.username
+        resp = request('http://www.hurl.ws/api/', post_data=urlencode(parameters))
+        return resp.read()
+
+hurlws = Hurlws()
 
 # tinyurl
 class Tinyurl(Service):
@@ -696,151 +835,9 @@ class Tinyurl(Service):
 
 tinyurl = Tinyurl()
 
-# toly
-class Toly(Service):
-
-    def shrink(self, bigurl):
-        resp = request('http://to.ly/api.php', {'longurl': bigurl})
-        return resp.read()
-
-toly = Toly()
-
-# trim
-class Trim(Service):
-
-    def __init__(self, apikey=None, username_pass=None):
-        self.apikey = apikey
-        self.username_pass = username_pass
-
-    def shrink(self, bigurl, custom=None, searchtags=None, privacycode=None,
-                newtrim=False, sandbox=False):
-        parameters = {}
-        parameters['url'] = bigurl
-        if custom:
-            parameters['custom'] = custom
-        if searchtags:
-            parameters['searchtags'] = searchtags
-        if privacycode:
-            parameters['privacycode'] = privacycode
-        if newtrim:
-            parameters['newtrim'] = '1'
-        if sandbox:
-            parameters['sandbox'] = '1'
-        if self.apikey:
-            parameters['api_key'] = self.apikey
-        resp = request('http://api.tr.im/api/trim_url.json', parameters, self.username_pass)
-        jdata = json.loads(resp.read())
-        self.status = (int(jdata['status']['code']), str(jdata['status']['message']))
-        if not 200 <= self.status[0] < 300:
-            raise ShortyError(self.status[1])
-        self.trimpath = str(jdata['trimpath'])
-        self.reference = str(jdata['reference'])
-        self.destination = str(jdata['destination'])
-        self.domain = str(jdata['domain'])
-        return str(jdata['url'])
-
-    def expand(self, tinyurl):
-        turl = urlparse(tinyurl)
-        if turl[1].lstrip('www.') != 'tr.im':
-            raise ShortyError('Not a valid tr.im url')
-        parameters = {'trimpath': turl[2].strip('/')}
-        if self.apikey:
-            parameters['api_key'] = self.apikey
-        resp = request('http://api.tr.im/api/trim_destination.json', parameters)
-        jdata = json.loads(resp.read())
-        self.status = (int(jdata['status']['code']), str(jdata['status']['message']))
-        if not 200 <= self.status[0] < 300:
-            raise ShortyError(self.status[1])
-        return str(jdata['destination'])
-
-trim = Trim()
-
-# tweetburner
-class Tweetburner(Service):
-
-    def shrink(self, bigurl):
-        resp = request('http://tweetburner.com/links', post_data='link[url]=%s' % bigurl)
-        return resp.read()
-
-tweetburner = Tweetburner()
-
-# ur1ca
-class Ur1ca(Service):
-
-    def shrink(self, bigurl):
-        resp = request('http://ur1.ca/',
-            post_data = urlencode({'longurl': bigurl, 'submit' : 'Make it an ur1!'}))
-        returned_data = resp.read()
-        matched_re = re.search('Your ur1 is: <a href="(http://ur1.ca/[^"]+)">\\1', returned_data)
-        if matched_re:
-            return matched_re.group(1)
-        else:
-            raise ShortyError('Failed to shrink url')
-
-ur1ca = Ur1ca()
-
-# urlborg
-class Urlborg(Service):
-
-    def __init__(self, apikey=None):
-        self.apikey = apikey
-
-    def _test(self):
-        # prompt tester for apikey
-        self.apikey = raw_input('urlborg apikey: ').strip()
-        Service._test(self)
-
-    def shrink(self, bigurl):
-        if not self.apikey:
-            raise ShortyError('Must set an apikey')
-        url = 'http://urlborg.com/api/%s/create/%s' % (self.apikey, quote(bigurl))
-        resp = request(url)
-        turl = resp.read()
-        if not turl.startswith('http://'):
-            raise ShortyError(turl)
-        return turl
-
-    def expand(self, tinyurl):
-        if not self.apikey:
-            return get_redirect(get_redirect(tinyurl))
-        turl = urlparse(tinyurl)
-        url = 'http://urlborg.com/api/%s/url/info.json%s' % (self.apikey, turl[2])
-        resp = request(url)
-        jdata = json.loads(resp.read())
-        if jdata.has_key('error'):
-            raise ShortyError('Invalid tiny url or apikey')
-        return str(jdata['o_url'])
-
-urlborg = Urlborg()
-
-# xr
-class Xr(Service):
-
-    def __init__(self, account_name=None):
-        self.account_name = account_name
-
-    def shrink(self, bigurl, custom=None, domain=None, direct=True):
-        parameters = {'link': bigurl}
-        if custom:
-            parameters['custom'] = custom
-        if domain:
-            parameters['domain'] = domain
-        if direct:
-            parameters['direct'] = 'yes'
-        if self.account_name:
-            parameters['pid'] = self.account_name
-        resp = request('http://api.xr.com/api', parameters)
-        url = resp.read()
-        if url.startswith('http'):
-            return url
-        else:
-            raise ShortyError(url)
-
-xr = Xr()
-
 services = {
     'snipr.com': snipurl,
-    'chilp.it': chilpit,
+    'budurl.com': budurl,
     'x.bb': xr,
     'short.to': shortto,
     'tr.im': trim,
@@ -848,7 +845,6 @@ services = {
     'buk.me': bukme,
     'fon.gs': fongs,
     'ub0.cc': urlborg,
-    'snurl.com': snipurl,
     'fwd4.me': fwd4me,
     'xr.com': xr,
     'short.ie': shortie,
@@ -856,12 +852,12 @@ services = {
     'burnurl.com': burnurl,
     'a.gd': agd,
     'hurl.ws': hurlws,
+    'snurl.com': snipurl,
     'digg.com': digg,
-    'kl.am': klam,
     'to.ly': toly,
     'hex.io': hexio,
     'goo.gl': google,
-    'budurl.com': budurl,
+    'chilp.it': chilpit,
     'cli.gs': cligs,
     'urlborg.com': urlborg,
     'is.gd': isgd,
@@ -869,6 +865,7 @@ services = {
     'ur1.ca': ur1ca,
     'tweetburner.com': tweetburner,
     'bit.ly': bitly,
+    'kl.am': klam,
     'tinyurl.com': tinyurl,
     'snipurl.com': snipurl,
 }

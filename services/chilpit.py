@@ -14,25 +14,22 @@ class Chilpit(Service):
             raise ShortyError(url)
 
     def expand(self, tinyurl):
-        Service.expand(self, tinyurl)
-
-        # needs fixing
-        """turl = urlparse(tinyurl)
+        turl = urlparse(tinyurl)
         if turl[1].lstrip('www.') != 'chilp.it':
             raise ShortyError('Not a chilp.it url')
-        resp = request('http://p.chilp.it/api.php?' + turl[4])
+        resp = request('http://p.chilp.it/api.php?' + turl[2][1:])
         url = resp.read()
         if url.startswith('http://'):
             return url.strip('\n\r')
         else:
-            raise ShortyError(url)"""
+            raise ShortyError(url)
 
     # get click stats of the tinyurl
     def stats(self, tinyurl):
         turl = urlparse(tinyurl)
         if turl[1].lstrip('www.') != 'chilp.it':
             raise ShortyError('Not a chilp.it url')
-        resp = request('http://s.chilp.it/api.php?' + turl[4])
+        resp = request('http://s.chilp.it/api.php?' + turl[2][1:])
         hit_count = resp.read()
         try:
             return int(hit_count)
