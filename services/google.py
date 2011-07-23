@@ -14,3 +14,7 @@ class Google(Service):
         else:
             return jdata['short_url']
 
+    def qrcode(self, tinyurl):
+        qrdata = request(tinyurl + '.qr').read()
+        return qrdata
+

@@ -59,3 +59,7 @@ class Bitly(Service):
             raise ShortyError(jdata['errorMessage'])
         return str(jdata['results'].values()[0]['longUrl'])
 
+    def qrcode(self, tinyurl):
+        qrdata = request(tinyurl + '.qrcode').read()
+        return qrdata
+
