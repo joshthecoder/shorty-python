@@ -68,7 +68,10 @@ class Bitly(Service):
         jdata = json.loads(resp.read())
         if jdata['status_code'] != 200:
             raise ShortyError(jdata['errorMessage'])
-        return str(jdata['data']['clicks'][0]['global_clicks'])
+        clicks = {}
+        clicks['user'] = jdata['data']['clicks'][0]['user_clicks']
+        clicks['global'] = jdata['data']['clicks'][0]['global_clicks']
+        return clicks
 
     def qrcode(self, tinyurl):
         qrdata = request(tinyurl + '.qrcode').read()
