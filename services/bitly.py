@@ -59,3 +59,21 @@ class Bitly(Service):
             raise ShortyError(jdata['errorMessage'])
         return str(jdata['results'].values()[0]['longUrl'])
 
+    def stats(self, tinyurl):
+        if not self.login:
+            return get_redirect(tinyurl)
+        parameters, username_pass = self._setup()
+        parameters['shortUrl'] = tinyurl
+        resp = request('http://api.bit.ly/v3/clicks', parameters, username_pass)
+        jdata = json.loads(resp.read())
+        if jdata['status_code'] != 200:
+            raise ShortyError(jdata['errorMessage'])
+        clicks = {}
+        clicks['user'] = jdata['data']['clicks'][0]['user_clicks']
+        clicks['global'] = jdata['data']['clicks'][0]['global_clicks']
+        return clicks
+
+    def qrcode(self, tinyurl):
+        qrdata = request(tinyurl + '.qrcode').read()
+        return qrdata
+
