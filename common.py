@@ -13,7 +13,7 @@ class ShortyError(Exception):
         return repr(self.reason)
 
 """Do a http request"""
-def request(url, parameters=None, username_pass=None, post_data=None):
+def request(url, parameters=None, username_pass=None, post_data=None, headers={}):
 
     # build url + parameters
     if parameters:
@@ -22,7 +22,6 @@ def request(url, parameters=None, username_pass=None, post_data=None):
         url_params = url
 
     # if username and pass supplied, build basic auth header
-    headers = {}
     if username_pass:
         headers['Authorization'] = 'Basic %s' % base64.b64encode('%s:%s' % username_pass)
 
