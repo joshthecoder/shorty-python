@@ -6,13 +6,15 @@
 class Google(Service):
 
     def shrink(self, bigurl):
-        resp = request('http://goo.gl/api/url', {'url': bigurl}, post_data = 'toolbar')
+        resp = request('https://www.googleapis.com/urlshortener/v1/url', 
+                        headers={"content-type":"application/json"}, 
+                        post_data=json.dumps({"longUrl": bigurl}))
         data = resp.read()
         jdata = json.loads(data)
-        if 'short_url' not in jdata:
+        if 'id' not in jdata:
             raise ShortyError(data)
         else:
-            return jdata['short_url']
+            return jdata['id']
 
     def qrcode(self, tinyurl):
         qrdata = request(tinyurl + '.qr').read()
